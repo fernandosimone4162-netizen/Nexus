@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nexus - Calculadora de Vendas</title>
+
+<style>
+body {
+  font-family: Arial, sans-serif;
+  background: #0f172a;
+  color: #e5e7eb;
+  padding: 20px;
+}
+
+.container {
+  max-width: 520px;
+  margin: auto;
+  background: #020617;
+  padding: 20px;
+  border-radius: 12px;
+}
+
+h2 {
+  text-align: center;
+  margin-bottom: 15px;
+}
+
+input, button {
+  width: 100%;
+  padding: 10px;
+  margin: 6px 0;
+  border-radius: 6px;
+  border: none;
+  font-size: 16px;
+}
+
+input {
+  background: #020617;
+  color: #fff;
+  border: 1px solid #334155;
+}
+
+button {
+  background: #2563eb;
+  color: #fff;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #1d4ed8;
+}
+
+.result {
+  background: #020617;
+  border: 1px solid #334155;
+  padding: 10px;
+  border-radius: 6px;
+  margin-top: 10px;
+}
+
+.copy {
+  background: #16a34a;
+  margin-top: 12px;
+}
+
+.info {
+  margin-top: 5px;
+  font-size: 14px;
+  color: #cbd5f5;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+<h2>NEXUS</h2>
+
+<!-- CLIENTE -->
+<input id="cliente" placeholder="Nome do cliente">
+
+<input id="porcentagemGeral" type="number" placeholder="% geral (desconto ou acréscimo)" oninput="calcular()">
+
+<div class="result">
+<strong>Valor final:</strong> R$ <span id="valorFinal">0.00</span>
+<div class="info" id="infoPorcentagem">Sem ajuste percentual</div>
+</div>
+
+<hr>
+
+<!-- PRODUTO -->
+<input id="produto" placeholder="Nome do produto">
+<input id="quantidade" type="number" placeholder="Quantidade" oninput="calcular()">
+<input id="valorUnitario" type="number" placeholder="Valor unitário" oninput="calcular()">
+
+<input id="porcentagemProduto" type="number" placeholder="% produto (opcional)" oninput="calcular()">
+
+<div class="result">
+<strong>Total do produto:</strong> R$ <span id="totalProduto">0.00</span>
+</div>
+
+<button class="copy" onclick="copiar()">Copiar resumo</button>
+</div>
+
+<script>
+function calcular() {
+  let qtd = parseFloat(quantidade.value) || 0;
+  let unit = parseFloat(valorUnitario.value) || 0;
+  let percProd = parseFloat(porcentagemProduto.value) || 0;
+  let percGeral = parseFloat(porcentagemGeral.value) || 0;
+
+  let totalProdutoCalc = qtd * unit;
+  totalProdutoCalc += totalProdutoCalc * (percProd / 100);
+
+  let totalFinalCalc = totalProdutoCalc + (totalProdutoCalc * (percGeral / 100));
+
+  totalProduto.innerText = totalProdutoCalc.toFixed(2);
+  valorFinal.innerText = totalFinalCalc.toFixed(2);
+
+  // Texto explicativo da porcentagem
+  let info = document.getElementById("infoPorcentagem");
+
+  if (percGeral > 0) {
+    info.innerText = `Acréscimo aplicado: +${percGeral}%`;
+  } else if (percGeral < 0) {
+    info.innerText = `Desconto aplicado: ${percGeral}%`;
+  } else {
+    info.innerText = "Sem ajuste percentual";
+  }
+}
+
+function copiar() {
+  let texto = `
+Cliente: ${cliente.value}
+
+Produto: ${produto.value}
+Quantidade: ${quantidade.value}
+Valor unitário: R$ ${valorUnitario.value}
+
+% Produto: ${porcentagemProduto.value || 0}%
+% Geral: ${porcentagemGeral.value || 0}%
+
+Valor final: R$ ${valorFinal.innerText}
+`;
+
+  navigator.clipboard.writeText(texto.trim());
+  alert("Resumo copiado!");
+}
+</script>
+
+</body>
+</html>
