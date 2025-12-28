@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -6,93 +7,63 @@
 <title>Nexus</title>
 
 <style>
-* {
-    box-sizing: border-box;
-    font-family: Arial, sans-serif;
-}
-
-body {
-    margin: 0;
-    background: #f4f6f8;
-}
+* { box-sizing: border-box; font-family: Arial, sans-serif; }
+body { margin: 0; background: #f4f6f8; }
 
 header {
-    background: #1f2937;
-    color: white;
-    padding: 15px;
-    text-align: center;
-    font-size: 18px;
+  background: #1f2937;
+  color: white;
+  padding: 15px;
+  text-align: center;
+  font-size: 18px;
 }
 
 nav {
-    display: flex;
-    overflow-x: auto;
-    background: #111827;
+  display: flex;
+  background: #111827;
 }
 
 nav button {
-    flex: 1;
-    padding: 14px;
-    border: none;
-    background: none;
-    color: #9ca3af;
-    font-size: 14px;
+  flex: 1;
+  padding: 12px;
+  border: none;
+  background: none;
+  color: #9ca3af;
 }
 
 nav button.active {
-    color: #fff;
-    border-bottom: 3px solid #3b82f6;
+  color: #fff;
+  border-bottom: 3px solid #3b82f6;
 }
 
-section {
-    display: none;
-    padding: 15px;
-}
-
-section.active {
-    display: block;
-}
+section { display: none; padding: 15px; }
+section.active { display: block; }
 
 .card {
-    background: white;
-    padding: 12px;
-    border-radius: 10px;
-    margin-bottom: 12px;
+  background: white;
+  padding: 12px;
+  border-radius: 10px;
+  margin-bottom: 10px;
 }
 
 input, select {
-    width: 100%;
-    padding: 10px;
-    margin-top: 6px;
-    margin-bottom: 10px;
-    border-radius: 6px;
-    border: 1px solid #ccc;
+  width: 100%;
+  padding: 8px;
+  margin-bottom: 8px;
 }
 
-button.primary {
-    width: 100%;
-    padding: 12px;
-    background: #3b82f6;
-    border: none;
-    color: white;
-    font-size: 16px;
-    border-radius: 8px;
+button {
+  padding: 10px;
+  width: 100%;
+  border: none;
+  border-radius: 8px;
 }
 
-button.secondary {
-    background: #10b981;
-    color: white;
-    padding: 10px;
-    border: none;
-    border-radius: 6px;
-    width: 100%;
-}
+.primary { background: #3b82f6; color: white; }
+.secondary { background: #10b981; color: white; }
 
-.total {
-    font-size: 18px;
-    font-weight: bold;
-    text-align: right;
-}
+.total { font-weight: bold; text-align: right; }
+.small { font-size: 13px; color: #555; }
 </style>
 </head>
 
@@ -101,110 +72,105 @@ button.secondary {
 <header>Nexus</header>
 
 <nav>
-    <button class="active" onclick="openTab('pedido')">Novo Pedido</button>
-    <button onclick="openTab('vendas')">Vendas</button>
-    <button onclick="openTab('historicoVendas')">Histórico Vendas</button>
-    <button onclick="openTab('historicoCompras')">Histórico Compras</button>
+  <button class="active" onclick="openTab('pedido')">Venda</button>
+  <button onclick="openTab('compra')">Compra</button>
+  <button onclick="openTab('histVendas')">Hist. Vendas</button>
+  <button onclick="openTab('histCompras')">Hist. Compras</button>
 </nav>
 
-<!-- NOVO PEDIDO -->
+<!-- VENDA -->
 <section id="pedido" class="active">
-    <div id="produtos"></div>
-
-    <button class="secondary" onclick="addProduto()">+ Adicionar Produto</button>
-
-    <div class="card">
-        <label>Desconto / Acréscimo (R$)</label>
-        <input type="number" id="valorExtra" value="0">
-
-        <label>Desconto / Acréscimo (%)</label>
-        <input type="number" id="percentualExtra" value="0">
-
-        <label>Acréscimo de Volume (%)</label>
-        <input type="number" id="percentualVolume" value="0">
-    </div>
-
-    <div class="card">
-        <div class="total">Total: R$ <span id="total">0.00</span></div>
-    </div>
-
-    <button class="primary" onclick="finalizarPedido()">Finalizar Pedido</button>
+  <div id="produtosVenda"></div>
+  <button class="secondary" onclick="addProduto('Venda')">+ Produto</button>
+  <div class="card total">Total: R$ <span id="totalVenda">0.00</span></div>
+  <button class="primary" onclick="finalizarVenda()">Salvar Venda</button>
 </section>
 
-<!-- VENDAS -->
-<section id="vendas">
-    <div class="card">Área de vendas do dia</div>
+<!-- COMPRA -->
+<section id="compra">
+  <input placeholder="Fornecedor" id="fornecedor">
+  <div id="produtosCompra"></div>
+  <button class="secondary" onclick="addProduto('Compra')">+ Produto</button>
+  <div class="card total">Total: R$ <span id="totalCompra">0.00</span></div>
+  <button class="primary" onclick="finalizarCompra()">Salvar Compra</button>
 </section>
 
 <!-- HISTÓRICO VENDAS -->
-<section id="historicoVendas">
-    <div class="card">Histórico mensal de vendas</div>
-</section>
+<section id="histVendas"></section>
 
 <!-- HISTÓRICO COMPRAS -->
-<section id="historicoCompras">
-    <div class="card">Histórico mensal de compras</div>
-</section>
+<section id="histCompras"></section>
 
 <script>
-let produtos = [];
+let vendas = [];
+let compras = [];
 
 function openTab(tab) {
-    document.querySelectorAll('section').forEach(s => s.classList.remove('active'));
-    document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
-
-    document.getElementById(tab).classList.add('active');
-    event.target.classList.add('active');
+  document.querySelectorAll('section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+  document.getElementById(tab).classList.add('active');
+  event.target.classList.add('active');
 }
 
-function addProduto() {
-    const index = produtos.length;
-    produtos.push({});
-
-    const div = document.createElement('div');
-    div.className = 'card';
-    div.innerHTML = `
-        <label>Produto</label>
-        <input type="text" oninput="update()">
-
-        <label>Quantidade</label>
-        <input type="number" oninput="update()">
-
-        <label>Unidade</label>
-        <select>
-            <option>Litros</option>
-            <option>Kg</option>
-            <option>Unidades</option>
-        </select>
-
-        <label>Preço Unitário</label>
-        <input type="number" oninput="update()">
-    `;
-    document.getElementById('produtos').appendChild(div);
+function addProduto(tipo) {
+  const div = document.createElement('div');
+  div.className = 'card';
+  div.innerHTML = `
+    <input placeholder="Produto">
+    <input type="number" placeholder="Quantidade" oninput="calcular()">
+    <input type="number" placeholder="Preço Unitário" oninput="calcular()">
+  `;
+  document.getElementById(`produtos${tipo}`).appendChild(div);
 }
 
-function update() {
-    let total = 0;
-    const cards = document.querySelectorAll('#produtos .card');
-
-    cards.forEach(card => {
-        const inputs = card.querySelectorAll('input');
-        const qtd = parseFloat(inputs[1].value) || 0;
-        const preco = parseFloat(inputs[3].value) || 0;
-        total += qtd * preco;
-    });
-
-    const valorExtra = parseFloat(document.getElementById('valorExtra').value) || 0;
-    const percentualExtra = parseFloat(document.getElementById('percentualExtra').value) || 0;
-
-    total += valorExtra;
-    total += total * (percentualExtra / 100);
-
-    document.getElementById('total').innerText = total.toFixed(2);
+function calcular() {
+  calcularTotal('Venda');
+  calcularTotal('Compra');
 }
 
-function finalizarPedido() {
-    alert("Pedido salvo com sucesso!");
+function calcularTotal(tipo) {
+  let total = 0;
+  document.querySelectorAll(`#produtos${tipo} .card`).forEach(c => {
+    const i = c.querySelectorAll('input');
+    total += (parseFloat(i[1].value)||0)*(parseFloat(i[2].value)||0);
+  });
+  document.getElementById(`total${tipo}`).innerText = total.toFixed(2);
+  return total;
+}
+
+function finalizarVenda() {
+  vendas.push({ data: new Date(), total: calcularTotal('Venda') });
+  renderVendas();
+  alert("Venda salva");
+}
+
+function finalizarCompra() {
+  compras.push({
+    data: new Date(),
+    fornecedor: fornecedor.value,
+    total: calcularTotal('Compra')
+  });
+  renderCompras();
+  alert("Compra salva");
+}
+
+function renderVendas() {
+  histVendas.innerHTML = vendas.map(v =>
+    `<div class="card">
+      <div class="small">${v.data.toLocaleString()}</div>
+      <b>R$ ${v.total.toFixed(2)}</b>
+    </div>`
+  ).join('');
+}
+
+function renderCompras() {
+  histCompras.innerHTML = compras.map(c =>
+    `<div class="card">
+      <div class="small">${c.data.toLocaleString()}</div>
+      <div>${c.fornecedor}</div>
+      <b>R$ ${c.total.toFixed(2)}</b>
+    </div>`
+  ).join('');
 }
 </script>
 
