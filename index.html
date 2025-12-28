@@ -3,26 +3,40 @@
 <head>
 <meta charset="UTF-8">
 <title>Nexus</title>
+
 <style>
 body{font-family:Arial;background:#111;color:#eee;padding:20px}
-h1,h2{color:#4CAF50}
-section{border:1px solid #333;padding:15px;margin-bottom:20px;border-radius:8px}
+h1,h2,h3{color:#4CAF50}
+.tabs button{
+background:#222;color:#eee;border:none;padding:10px 15px;
+cursor:pointer;margin-right:5px;border-radius:5px
+}
+.tabs button.active{background:#4CAF50;color:#000}
+section{display:none;border:1px solid #333;padding:15px;margin-top:15px;border-radius:8px}
 input,select,button{margin:5px;padding:6px}
-button{cursor:pointer}
 table{width:100%;border-collapse:collapse;margin-top:10px}
 th,td{border:1px solid #333;padding:6px;text-align:center}
 .total{font-size:18px;color:#0f0;margin-top:10px}
 .remove{color:red;cursor:pointer}
 </style>
+
 </head>
 <body>
 
 <h1>Nexus</h1>
 
-<section>
-<h2>Venda — Pedido com vários produtos</h2>
+<div class="tabs">
+<button onclick="openTab('vendas')" class="active">Vendas</button>
+<button onclick="openTab('compras')">Compras</button>
+<button onclick="openTab('histVendas')">Histórico Vendas</button>
+<button onclick="openTab('histCompras')">Histórico Compras</button>
+<button onclick="openTab('resumo')">Resumo Mensal</button>
+</div>
 
-<div>
+<!-- VENDAS -->
+<section id="vendas" style="display:block">
+<h2>Venda — Múltiplos Produtos</h2>
+
 <input id="itemNome" placeholder="Produto">
 <input id="itemQtd" type="number" step="0.01" placeholder="Quantidade">
 <select id="itemUnidade">
@@ -31,54 +45,47 @@ th,td{border:1px solid #333;padding:6px;text-align:center}
 <option>litro</option>
 </select>
 <input id="itemPreco" type="number" step="0.01" placeholder="Preço unitário">
-<button onclick="addItem()">+ Adicionar produto</button>
-</div>
+<button onclick="addItem()">+ Adicionar</button>
 
 <h3>Itens do pedido</h3>
 <table>
 <thead>
-<tr>
-<th>Produto</th>
-<th>Qtd</th>
-<th>Unid</th>
-<th>Preço</th>
-<th>Total</th>
-<th>❌</th>
-</tr>
+<tr><th>Produto</th><th>Qtd</th><th>Unid</th><th>Preço</th><th>Total</th><th></th></tr>
 </thead>
-<tbody id="itens">
-<tr><td colspan="6">Nenhum produto adicionado</td></tr>
-</tbody>
+<tbody id="itens"></tbody>
 </table>
 
 <h3>Ajustes</h3>
-<input id="ajusteValor" type="number" step="0.01" placeholder="Ajuste em R$ (+/-)">
-<input id="ajustePorc" type="number" step="0.01" placeholder="Ajuste % valor">
-<input id="ajusteVolume" type="number" step="0.01" placeholder="Ajuste % volume">
+<input id="ajusteValor" type="number" placeholder="Ajuste R$">
+<input id="ajustePorc" type="number" placeholder="Ajuste %">
 
-<p class="total">Total da venda: R$ <span id="totalVenda">0.00</span></p>
-<button onclick="finalizarVenda()">Finalizar venda</button>
+<p class="total">Total: R$ <span id="totalVenda">0.00</span></p>
+<button onclick="finalizarVenda()">Finalizar Venda</button>
 </section>
 
-<section>
+<!-- COMPRAS -->
+<section id="compras">
 <h2>Compra / Fornecedor</h2>
 <input id="compraNome" placeholder="Produto">
 <input id="compraQtd" type="number" step="0.01" placeholder="Quantidade">
 <input id="compraPreco" type="number" step="0.01" placeholder="Preço unitário">
-<button onclick="addCompra()">Registrar compra</button>
+<button onclick="addCompra()">Registrar Compra</button>
 </section>
 
-<section>
+<!-- HISTÓRICO VENDAS -->
+<section id="histVendas">
 <h2>Histórico de Vendas</h2>
-<div id="histVendas"></div>
+<div id="listaVendas"></div>
 </section>
 
-<section>
+<!-- HISTÓRICO COMPRAS -->
+<section id="histCompras">
 <h2>Histórico de Compras</h2>
-<div id="histCompras"></div>
+<div id="listaCompras"></div>
 </section>
 
-<section>
+<!-- RESUMO -->
+<section id="resumo">
 <h2>Resumo Mensal</h2>
 <p>Total vendido no mês: R$ <span id="mesVendas">0.00</span></p>
 <p>Total gasto no mês: R$ <span id="mesCompras">0.00</span></p>
@@ -89,14 +96,20 @@ let itensVenda=[];
 let vendas=JSON.parse(localStorage.getItem("vendas")||"[]");
 let compras=JSON.parse(localStorage.getItem("compras")||"[]");
 
-function addItem(){
-let nome=itemNome.value;
-let qtd=parseFloat(itemQtd.value);
-let un=itemUnidade.value;
-let preco=parseFloat(itemPreco.value);
-if(!nome||!qtd||!preco)return alert("Preencha todos os campos do produto");
+function openTab(id){
+document.querySelectorAll("section").forEach(s=>s.style.display="none");
+document.querySelectorAll(".tabs button").forEach(b=>b.classList.remove("active"));
+document.getElementById(id).style.display="block";
+event.target.classList.add("active");
+}
 
-itensVenda.push({nome,qtd,un,preco});
+function addItem(){
+let n=itemNome.value;
+let q=parseFloat(itemQtd.value);
+let u=itemUnidade.value;
+let p=parseFloat(itemPreco.value);
+if(!n||!q||!p)return alert("Preencha tudo");
+itensVenda.push({n,q,u,p});
 itemNome.value=itemQtd.value=itemPreco.value="";
 renderItens();
 }
@@ -109,30 +122,26 @@ renderItens();
 function renderItens(){
 itens.innerHTML="";
 let total=0;
-
 if(itensVenda.length===0){
-itens.innerHTML='<tr><td colspan="6">Nenhum produto adicionado</td></tr>';
+itens.innerHTML="<tr><td colspan='6'>Nenhum item</td></tr>";
 }
-
 itensVenda.forEach((i,idx)=>{
-let sub=i.qtd*i.preco;
+let sub=i.q*i.p;
 total+=sub;
 itens.innerHTML+=`
 <tr>
-<td>${i.nome}</td>
-<td>${i.qtd}</td>
-<td>${i.un}</td>
-<td>R$ ${i.preco.toFixed(2)}</td>
+<td>${i.n}</td>
+<td>${i.q}</td>
+<td>${i.u}</td>
+<td>R$ ${i.p.toFixed(2)}</td>
 <td>R$ ${sub.toFixed(2)}</td>
 <td class="remove" onclick="removerItem(${idx})">X</td>
 </tr>`;
 });
-
 let av=parseFloat(ajusteValor.value)||0;
 let ap=parseFloat(ajustePorc.value)||0;
 total+=av;
 total+=total*(ap/100);
-
 totalVenda.innerText=total.toFixed(2);
 }
 
@@ -141,49 +150,46 @@ document.getElementById(id).oninput=renderItens;
 });
 
 function finalizarVenda(){
-if(itensVenda.length===0)return alert("Adicione pelo menos um produto");
-let total=parseFloat(totalVenda.innerText);
-vendas.push({data:new Date().toISOString(),itens:itensVenda,total});
+if(itensVenda.length===0)return alert("Sem itens");
+vendas.push({data:new Date().toISOString(),total:parseFloat(totalVenda.innerText)});
 localStorage.setItem("vendas",JSON.stringify(vendas));
 itensVenda=[];
 renderItens();
-renderHist();
+renderHistoricos();
 }
 
 function addCompra(){
-let nome=compraNome.value;
-let qtd=parseFloat(compraQtd.value);
-let preco=parseFloat(compraPreco.value);
-if(!nome||!qtd||!preco)return;
-compras.push({data:new Date().toISOString(),nome,qtd,preco,total:qtd*preco});
+let n=compraNome.value;
+let q=parseFloat(compraQtd.value);
+let p=parseFloat(compraPreco.value);
+if(!n||!q||!p)return;
+compras.push({data:new Date().toISOString(),total:q*p,n});
 localStorage.setItem("compras",JSON.stringify(compras));
-renderHist();
+renderHistoricos();
 }
 
-function renderHist(){
-histVendas.innerHTML="";
-histCompras.innerHTML="";
+function renderHistoricos(){
+listaVendas.innerHTML="";
+listaCompras.innerHTML="";
 let m=new Date().getMonth(),y=new Date().getFullYear();
 let tv=0,tc=0;
 
 vendas.forEach(v=>{
 let d=new Date(v.data);
-histVendas.innerHTML+=`${d.toLocaleString()} - R$ ${v.total.toFixed(2)}<br>`;
+listaVendas.innerHTML+=`${d.toLocaleString()} — R$ ${v.total.toFixed(2)}<br>`;
 if(d.getMonth()==m&&d.getFullYear()==y)tv+=v.total;
 });
-
 compras.forEach(c=>{
 let d=new Date(c.data);
-histCompras.innerHTML+=`${d.toLocaleString()} - ${c.nome} - R$ ${c.total.toFixed(2)}<br>`;
+listaCompras.innerHTML+=`${d.toLocaleString()} — ${c.n} — R$ ${c.total.toFixed(2)}<br>`;
 if(d.getMonth()==m&&d.getFullYear()==y)tc+=c.total;
 });
-
 mesVendas.innerText=tv.toFixed(2);
 mesCompras.innerText=tc.toFixed(2);
 }
 
 renderItens();
-renderHist();
+renderHistoricos();
 </script>
 
 </body>
