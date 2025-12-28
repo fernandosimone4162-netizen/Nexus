@@ -11,7 +11,8 @@ input,select,button{margin:5px;padding:6px}
 button{cursor:pointer}
 table{width:100%;border-collapse:collapse;margin-top:10px}
 th,td{border:1px solid #333;padding:6px;text-align:center}
-.total{font-size:18px;color:#0f0}
+.total{font-size:18px;color:#0f0;margin-top:10px}
+.remove{color:red;cursor:pointer}
 </style>
 </head>
 <body>
@@ -19,8 +20,9 @@ th,td{border:1px solid #333;padding:6px;text-align:center}
 <h1>Nexus</h1>
 
 <section>
-<h2>Venda - Múltiplos Itens</h2>
+<h2>Venda — Pedido com vários produtos</h2>
 
+<div>
 <input id="itemNome" placeholder="Produto">
 <input id="itemQtd" type="number" step="0.01" placeholder="Quantidade">
 <select id="itemUnidade">
@@ -29,22 +31,33 @@ th,td{border:1px solid #333;padding:6px;text-align:center}
 <option>litro</option>
 </select>
 <input id="itemPreco" type="number" step="0.01" placeholder="Preço unitário">
-<button onclick="addItem()">Adicionar item</button>
+<button onclick="addItem()">+ Adicionar produto</button>
+</div>
 
+<h3>Itens do pedido</h3>
 <table>
 <thead>
-<tr><th>Produto</th><th>Qtd</th><th>Unid</th><th>Preço</th><th>Total</th></tr>
+<tr>
+<th>Produto</th>
+<th>Qtd</th>
+<th>Unid</th>
+<th>Preço</th>
+<th>Total</th>
+<th>❌</th>
+</tr>
 </thead>
-<tbody id="itens"></tbody>
+<tbody id="itens">
+<tr><td colspan="6">Nenhum produto adicionado</td></tr>
+</tbody>
 </table>
 
 <h3>Ajustes</h3>
-<input id="ajusteValor" type="number" step="0.01" placeholder="Ajuste R$ (+/-)">
+<input id="ajusteValor" type="number" step="0.01" placeholder="Ajuste em R$ (+/-)">
 <input id="ajustePorc" type="number" step="0.01" placeholder="Ajuste % valor">
 <input id="ajusteVolume" type="number" step="0.01" placeholder="Ajuste % volume">
 
-<p class="total">Total Venda: R$ <span id="totalVenda">0.00</span></p>
-<button onclick="finalizarVenda()">Finalizar Venda</button>
+<p class="total">Total da venda: R$ <span id="totalVenda">0.00</span></p>
+<button onclick="finalizarVenda()">Finalizar venda</button>
 </section>
 
 <section>
@@ -52,7 +65,7 @@ th,td{border:1px solid #333;padding:6px;text-align:center}
 <input id="compraNome" placeholder="Produto">
 <input id="compraQtd" type="number" step="0.01" placeholder="Quantidade">
 <input id="compraPreco" type="number" step="0.01" placeholder="Preço unitário">
-<button onclick="addCompra()">Registrar Compra</button>
+<button onclick="addCompra()">Registrar compra</button>
 </section>
 
 <section>
@@ -67,8 +80,8 @@ th,td{border:1px solid #333;padding:6px;text-align:center}
 
 <section>
 <h2>Resumo Mensal</h2>
-<p>Total Vendido no Mês: R$ <span id="mesVendas">0.00</span></p>
-<p>Total Gasto no Mês: R$ <span id="mesCompras">0.00</span></p>
+<p>Total vendido no mês: R$ <span id="mesVendas">0.00</span></p>
+<p>Total gasto no mês: R$ <span id="mesCompras">0.00</span></p>
 </section>
 
 <script>
@@ -81,51 +94,56 @@ let nome=itemNome.value;
 let qtd=parseFloat(itemQtd.value);
 let un=itemUnidade.value;
 let preco=parseFloat(itemPreco.value);
-if(!nome||!qtd||!preco)return;
+if(!nome||!qtd||!preco)return alert("Preencha todos os campos do produto");
+
 itensVenda.push({nome,qtd,un,preco});
+itemNome.value=itemQtd.value=itemPreco.value="";
+renderItens();
+}
+
+function removerItem(i){
+itensVenda.splice(i,1);
 renderItens();
 }
 
 function renderItens(){
 itens.innerHTML="";
 let total=0;
-itensVenda.forEach(i=>{
-let subtotal=i.qtd*i.preco;
-total+=subtotal;
-itens.innerHTML+=`<tr>
+
+if(itensVenda.length===0){
+itens.innerHTML='<tr><td colspan="6">Nenhum produto adicionado</td></tr>';
+}
+
+itensVenda.forEach((i,idx)=>{
+let sub=i.qtd*i.preco;
+total+=sub;
+itens.innerHTML+=`
+<tr>
 <td>${i.nome}</td>
 <td>${i.qtd}</td>
 <td>${i.un}</td>
-<td>${i.preco.toFixed(2)}</td>
-<td>${subtotal.toFixed(2)}</td>
+<td>R$ ${i.preco.toFixed(2)}</td>
+<td>R$ ${sub.toFixed(2)}</td>
+<td class="remove" onclick="removerItem(${idx})">X</td>
 </tr>`;
 });
 
-let ajusteV=parseFloat(ajusteValor.value)||0;
-let ajusteP=parseFloat(ajustePorc.value)||0;
-let ajusteVol=parseFloat(ajusteVolume.value)||0;
-
-let volumeExtra=0;
-if(ajusteVol>0){
-itensVenda.forEach(i=>{
-volumeExtra+=i.qtd*(ajusteVol/100);
-});
-}
-
-total += ajusteV;
-total += total*(ajusteP/100);
+let av=parseFloat(ajusteValor.value)||0;
+let ap=parseFloat(ajustePorc.value)||0;
+total+=av;
+total+=total*(ap/100);
 
 totalVenda.innerText=total.toFixed(2);
 }
 
-["ajusteValor","ajustePorc","ajusteVolume"].forEach(id=>{
+["ajusteValor","ajustePorc"].forEach(id=>{
 document.getElementById(id).oninput=renderItens;
 });
 
 function finalizarVenda(){
+if(itensVenda.length===0)return alert("Adicione pelo menos um produto");
 let total=parseFloat(totalVenda.innerText);
-let data=new Date();
-vendas.push({data:data.toISOString(),itens:itensVenda,total});
+vendas.push({data:new Date().toISOString(),itens:itensVenda,total});
 localStorage.setItem("vendas",JSON.stringify(vendas));
 itensVenda=[];
 renderItens();
@@ -137,8 +155,7 @@ let nome=compraNome.value;
 let qtd=parseFloat(compraQtd.value);
 let preco=parseFloat(compraPreco.value);
 if(!nome||!qtd||!preco)return;
-let data=new Date();
-compras.push({data:data.toISOString(),nome,qtd,preco,total:qtd*preco});
+compras.push({data:new Date().toISOString(),nome,qtd,preco,total:qtd*preco});
 localStorage.setItem("compras",JSON.stringify(compras));
 renderHist();
 }
@@ -146,26 +163,26 @@ renderHist();
 function renderHist(){
 histVendas.innerHTML="";
 histCompras.innerHTML="";
-let mes=new Date().getMonth();
-let ano=new Date().getFullYear();
+let m=new Date().getMonth(),y=new Date().getFullYear();
 let tv=0,tc=0;
 
 vendas.forEach(v=>{
 let d=new Date(v.data);
 histVendas.innerHTML+=`${d.toLocaleString()} - R$ ${v.total.toFixed(2)}<br>`;
-if(d.getMonth()==mes&&d.getFullYear()==ano)tv+=v.total;
+if(d.getMonth()==m&&d.getFullYear()==y)tv+=v.total;
 });
 
 compras.forEach(c=>{
 let d=new Date(c.data);
 histCompras.innerHTML+=`${d.toLocaleString()} - ${c.nome} - R$ ${c.total.toFixed(2)}<br>`;
-if(d.getMonth()==mes&&d.getFullYear()==ano)tc+=c.total;
+if(d.getMonth()==m&&d.getFullYear()==y)tc+=c.total;
 });
 
 mesVendas.innerText=tv.toFixed(2);
 mesCompras.innerText=tc.toFixed(2);
 }
 
+renderItens();
 renderHist();
 </script>
 
