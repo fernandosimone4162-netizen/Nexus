@@ -2,152 +2,178 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Nexus - Calculadora de Vendas</title>
-
+<title>Nexus - Gestão</title>
 <style>
-body {
-  font-family: Arial, sans-serif;
-  background: #0f172a;
-  color: #e5e7eb;
-  padding: 20px;
-}
-
-.container {
-  max-width: 520px;
-  margin: auto;
-  background: #020617;
-  padding: 20px;
-  border-radius: 12px;
-}
-
-h2 {
-  text-align: center;
-  margin-bottom: 15px;
-}
-
-input, button {
-  width: 100%;
-  padding: 10px;
-  margin: 6px 0;
-  border-radius: 6px;
-  border: none;
-  font-size: 16px;
-}
-
-input {
-  background: #020617;
-  color: #fff;
-  border: 1px solid #334155;
-}
-
-button {
-  background: #2563eb;
-  color: #fff;
-  font-weight: bold;
-  cursor: pointer;
-}
-
-button:hover {
-  background: #1d4ed8;
-}
-
-.result {
-  background: #020617;
-  border: 1px solid #334155;
-  padding: 10px;
-  border-radius: 6px;
-  margin-top: 10px;
-}
-
-.copy {
-  background: #16a34a;
-  margin-top: 12px;
-}
-
-.info {
-  margin-top: 5px;
-  font-size: 14px;
-  color: #cbd5f5;
-}
+body { font-family: Arial; background:#f4f4f4; padding:20px }
+h2 { margin-top:40px }
+.box { background:#fff; padding:15px; border-radius:8px; margin-bottom:20px }
+input, select, button { margin:5px; padding:6px }
+table { width:100%; border-collapse:collapse; margin-top:10px }
+th, td { border:1px solid #ccc; padding:6px; text-align:center }
+.total { font-weight:bold; font-size:18px }
 </style>
 </head>
 
 <body>
 
-<div class="container">
-<h2>NEXUS</h2>
+<h1>Nexus — Sistema de Gestão</h1>
 
-<!-- CLIENTE -->
-<input id="cliente" placeholder="Nome do cliente">
+<!-- ================= VENDAS ================= -->
+<div class="box">
+<h2>Venda</h2>
 
-<input id="porcentagemGeral" type="number" placeholder="% geral (desconto ou acréscimo)" oninput="calcular()">
+<input id="v_nome" placeholder="Produto">
+<input id="v_qtd" type="number" placeholder="Qtd">
+<select id="v_unidade">
+  <option>unidade</option>
+  <option>kg</option>
+  <option>g</option>
+  <option>litro</option>
+  <option>ml</option>
+</select>
+<input id="v_preco" type="number" placeholder="Preço unitário">
 
-<div class="result">
-<strong>Valor final:</strong> R$ <span id="valorFinal">0.00</span>
-<div class="info" id="infoPorcentagem">Sem ajuste percentual</div>
+<button onclick="addVendaItem()">Adicionar item</button>
+
+<table id="v_table">
+<tr><th>Produto</th><th>Qtd</th><th>Unidade</th><th>Preço</th><th>Total</th></tr>
+</table>
+
+<br>
+Ajuste R$: <input id="v_ajuste_valor" type="number" value="0">
+Ajuste %: <input id="v_ajuste_pct" type="number" value="0">
+Volume %: <input id="v_volume_pct" type="number" value="0">
+
+<p class="total">Total Venda: R$ <span id="v_total">0.00</span></p>
+
+<button onclick="finalizarVenda()">Finalizar Venda</button>
 </div>
 
-<hr>
+<!-- ================= COMPRAS ================= -->
+<div class="box">
+<h2>Compra / Fornecedor</h2>
 
-<!-- PRODUTO -->
-<input id="produto" placeholder="Nome do produto">
-<input id="quantidade" type="number" placeholder="Quantidade" oninput="calcular()">
-<input id="valorUnitario" type="number" placeholder="Valor unitário" oninput="calcular()">
+<input id="c_nome" placeholder="Produto">
+<input id="c_qtd" type="number" placeholder="Qtd">
+<select id="c_unidade">
+  <option>unidade</option>
+  <option>kg</option>
+  <option>g</option>
+  <option>litro</option>
+  <option>ml</option>
+</select>
+<input id="c_preco" type="number" placeholder="Preço unitário">
 
-<input id="porcentagemProduto" type="number" placeholder="% produto (opcional)" oninput="calcular()">
-
-<div class="result">
-<strong>Total do produto:</strong> R$ <span id="totalProduto">0.00</span>
+<button onclick="addCompra()">Registrar Compra</button>
 </div>
 
-<button class="copy" onclick="copiar()">Copiar resumo</button>
+<!-- ================= HISTÓRICOS ================= -->
+<div class="box">
+<h2>Histórico de Vendas</h2>
+<div id="hist_vendas"></div>
+</div>
+
+<div class="box">
+<h2>Histórico de Compras</h2>
+<div id="hist_compras"></div>
 </div>
 
 <script>
-function calcular() {
-  let qtd = parseFloat(quantidade.value) || 0;
-  let unit = parseFloat(valorUnitario.value) || 0;
-  let percProd = parseFloat(porcentagemProduto.value) || 0;
-  let percGeral = parseFloat(porcentagemGeral.value) || 0;
+let vendaItens = [];
 
-  let totalProdutoCalc = qtd * unit;
-  totalProdutoCalc += totalProdutoCalc * (percProd / 100);
+function addVendaItem(){
+  let nome = v_nome.value;
+  let qtd = parseFloat(v_qtd.value);
+  let unidade = v_unidade.value;
+  let preco = parseFloat(v_preco.value);
 
-  let totalFinalCalc = totalProdutoCalc + (totalProdutoCalc * (percGeral / 100));
+  if(!nome || !qtd || !preco) return alert("Preencha tudo");
 
-  totalProduto.innerText = totalProdutoCalc.toFixed(2);
-  valorFinal.innerText = totalFinalCalc.toFixed(2);
-
-  // Texto explicativo da porcentagem
-  let info = document.getElementById("infoPorcentagem");
-
-  if (percGeral > 0) {
-    info.innerText = `Acréscimo aplicado: +${percGeral}%`;
-  } else if (percGeral < 0) {
-    info.innerText = `Desconto aplicado: ${percGeral}%`;
-  } else {
-    info.innerText = "Sem ajuste percentual";
-  }
+  vendaItens.push({nome,qtd,unidade,preco});
+  renderVenda();
 }
 
-function copiar() {
-  let texto = `
-Cliente: ${cliente.value}
+function renderVenda(){
+  v_table.innerHTML = "<tr><th>Produto</th><th>Qtd</th><th>Unidade</th><th>Preço</th><th>Total</th></tr>";
+  let total = 0;
 
-Produto: ${produto.value}
-Quantidade: ${quantidade.value}
-Valor unitário: R$ ${valorUnitario.value}
+  vendaItens.forEach(i=>{
+    let itemTotal = i.qtd * i.preco;
+    total += itemTotal;
+    v_table.innerHTML += `<tr>
+      <td>${i.nome}</td>
+      <td>${i.qtd}</td>
+      <td>${i.unidade}</td>
+      <td>R$ ${i.preco}</td>
+      <td>R$ ${itemTotal.toFixed(2)}</td>
+    </tr>`;
+  });
 
-% Produto: ${porcentagemProduto.value || 0}%
-% Geral: ${porcentagemGeral.value || 0}%
+  let ajusteValor = parseFloat(v_ajuste_valor.value || 0);
+  let ajustePct = parseFloat(v_ajuste_pct.value || 0);
 
-Valor final: R$ ${valorFinal.innerText}
-`;
+  total += ajusteValor;
+  total += total * (ajustePct/100);
 
-  navigator.clipboard.writeText(texto.trim());
-  alert("Resumo copiado!");
+  v_total.innerText = total.toFixed(2);
 }
+
+v_ajuste_valor.oninput = renderVenda;
+v_ajuste_pct.oninput = renderVenda;
+
+function finalizarVenda(){
+  let vendas = JSON.parse(localStorage.getItem("vendas")||"[]");
+
+  vendas.push({
+    data:new Date().toLocaleString(),
+    itens:vendaItens,
+    total:parseFloat(v_total.innerText)
+  });
+
+  localStorage.setItem("vendas",JSON.stringify(vendas));
+  vendaItens=[];
+  renderVenda();
+  carregarHistoricos();
+}
+
+function addCompra(){
+  let compras = JSON.parse(localStorage.getItem("compras")||"[]");
+
+  compras.push({
+    produto:c_nome.value,
+    qtd:c_qtd.value,
+    unidade:c_unidade.value,
+    preco:c_preco.value,
+    data:new Date().toLocaleString(),
+    total:c_qtd.value*c_preco.value
+  });
+
+  localStorage.setItem("compras",JSON.stringify(compras));
+  carregarHistoricos();
+}
+
+function carregarHistoricos(){
+  let vendas = JSON.parse(localStorage.getItem("vendas")||"[]");
+  let compras = JSON.parse(localStorage.getItem("compras")||"[]");
+
+  hist_vendas.innerHTML="";
+  let totalMesV=0;
+  vendas.forEach(v=>{
+    hist_vendas.innerHTML+=`<p>${v.data} — R$ ${v.total}</p>`;
+    totalMesV+=v.total;
+  });
+  hist_vendas.innerHTML+=`<strong>Total mês: R$ ${totalMesV.toFixed(2)}</strong>`;
+
+  hist_compras.innerHTML="";
+  let totalMesC=0;
+  compras.forEach(c=>{
+    hist_compras.innerHTML+=`<p>${c.data} — ${c.produto} — R$ ${c.total}</p>`;
+    totalMesC+=c.total;
+  });
+  hist_compras.innerHTML+=`<strong>Gastos mês: R$ ${totalMesC.toFixed(2)}</strong>`;
+}
+
+carregarHistoricos();
 </script>
 
 </body>
