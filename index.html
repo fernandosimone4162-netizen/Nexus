@@ -2,178 +2,171 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>Nexus - Gestão</title>
+<title>Nexus</title>
 <style>
-body { font-family: Arial; background:#f4f4f4; padding:20px }
-h2 { margin-top:40px }
-.box { background:#fff; padding:15px; border-radius:8px; margin-bottom:20px }
-input, select, button { margin:5px; padding:6px }
-table { width:100%; border-collapse:collapse; margin-top:10px }
-th, td { border:1px solid #ccc; padding:6px; text-align:center }
-.total { font-weight:bold; font-size:18px }
+body{font-family:Arial;background:#111;color:#eee;padding:20px}
+h1,h2{color:#4CAF50}
+section{border:1px solid #333;padding:15px;margin-bottom:20px;border-radius:8px}
+input,select,button{margin:5px;padding:6px}
+button{cursor:pointer}
+table{width:100%;border-collapse:collapse;margin-top:10px}
+th,td{border:1px solid #333;padding:6px;text-align:center}
+.total{font-size:18px;color:#0f0}
 </style>
 </head>
-
 <body>
 
-<h1>Nexus — Sistema de Gestão</h1>
+<h1>Nexus</h1>
 
-<!-- ================= VENDAS ================= -->
-<div class="box">
-<h2>Venda</h2>
+<section>
+<h2>Venda - Múltiplos Itens</h2>
 
-<input id="v_nome" placeholder="Produto">
-<input id="v_qtd" type="number" placeholder="Qtd">
-<select id="v_unidade">
-  <option>unidade</option>
-  <option>kg</option>
-  <option>g</option>
-  <option>litro</option>
-  <option>ml</option>
+<input id="itemNome" placeholder="Produto">
+<input id="itemQtd" type="number" step="0.01" placeholder="Quantidade">
+<select id="itemUnidade">
+<option>unidade</option>
+<option>kg</option>
+<option>litro</option>
 </select>
-<input id="v_preco" type="number" placeholder="Preço unitário">
+<input id="itemPreco" type="number" step="0.01" placeholder="Preço unitário">
+<button onclick="addItem()">Adicionar item</button>
 
-<button onclick="addVendaItem()">Adicionar item</button>
-
-<table id="v_table">
-<tr><th>Produto</th><th>Qtd</th><th>Unidade</th><th>Preço</th><th>Total</th></tr>
+<table>
+<thead>
+<tr><th>Produto</th><th>Qtd</th><th>Unid</th><th>Preço</th><th>Total</th></tr>
+</thead>
+<tbody id="itens"></tbody>
 </table>
 
-<br>
-Ajuste R$: <input id="v_ajuste_valor" type="number" value="0">
-Ajuste %: <input id="v_ajuste_pct" type="number" value="0">
-Volume %: <input id="v_volume_pct" type="number" value="0">
+<h3>Ajustes</h3>
+<input id="ajusteValor" type="number" step="0.01" placeholder="Ajuste R$ (+/-)">
+<input id="ajustePorc" type="number" step="0.01" placeholder="Ajuste % valor">
+<input id="ajusteVolume" type="number" step="0.01" placeholder="Ajuste % volume">
 
-<p class="total">Total Venda: R$ <span id="v_total">0.00</span></p>
-
+<p class="total">Total Venda: R$ <span id="totalVenda">0.00</span></p>
 <button onclick="finalizarVenda()">Finalizar Venda</button>
-</div>
+</section>
 
-<!-- ================= COMPRAS ================= -->
-<div class="box">
+<section>
 <h2>Compra / Fornecedor</h2>
-
-<input id="c_nome" placeholder="Produto">
-<input id="c_qtd" type="number" placeholder="Qtd">
-<select id="c_unidade">
-  <option>unidade</option>
-  <option>kg</option>
-  <option>g</option>
-  <option>litro</option>
-  <option>ml</option>
-</select>
-<input id="c_preco" type="number" placeholder="Preço unitário">
-
+<input id="compraNome" placeholder="Produto">
+<input id="compraQtd" type="number" step="0.01" placeholder="Quantidade">
+<input id="compraPreco" type="number" step="0.01" placeholder="Preço unitário">
 <button onclick="addCompra()">Registrar Compra</button>
-</div>
+</section>
 
-<!-- ================= HISTÓRICOS ================= -->
-<div class="box">
+<section>
 <h2>Histórico de Vendas</h2>
-<div id="hist_vendas"></div>
-</div>
+<div id="histVendas"></div>
+</section>
 
-<div class="box">
+<section>
 <h2>Histórico de Compras</h2>
-<div id="hist_compras"></div>
-</div>
+<div id="histCompras"></div>
+</section>
+
+<section>
+<h2>Resumo Mensal</h2>
+<p>Total Vendido no Mês: R$ <span id="mesVendas">0.00</span></p>
+<p>Total Gasto no Mês: R$ <span id="mesCompras">0.00</span></p>
+</section>
 
 <script>
-let vendaItens = [];
+let itensVenda=[];
+let vendas=JSON.parse(localStorage.getItem("vendas")||"[]");
+let compras=JSON.parse(localStorage.getItem("compras")||"[]");
 
-function addVendaItem(){
-  let nome = v_nome.value;
-  let qtd = parseFloat(v_qtd.value);
-  let unidade = v_unidade.value;
-  let preco = parseFloat(v_preco.value);
-
-  if(!nome || !qtd || !preco) return alert("Preencha tudo");
-
-  vendaItens.push({nome,qtd,unidade,preco});
-  renderVenda();
+function addItem(){
+let nome=itemNome.value;
+let qtd=parseFloat(itemQtd.value);
+let un=itemUnidade.value;
+let preco=parseFloat(itemPreco.value);
+if(!nome||!qtd||!preco)return;
+itensVenda.push({nome,qtd,un,preco});
+renderItens();
 }
 
-function renderVenda(){
-  v_table.innerHTML = "<tr><th>Produto</th><th>Qtd</th><th>Unidade</th><th>Preço</th><th>Total</th></tr>";
-  let total = 0;
+function renderItens(){
+itens.innerHTML="";
+let total=0;
+itensVenda.forEach(i=>{
+let subtotal=i.qtd*i.preco;
+total+=subtotal;
+itens.innerHTML+=`<tr>
+<td>${i.nome}</td>
+<td>${i.qtd}</td>
+<td>${i.un}</td>
+<td>${i.preco.toFixed(2)}</td>
+<td>${subtotal.toFixed(2)}</td>
+</tr>`;
+});
 
-  vendaItens.forEach(i=>{
-    let itemTotal = i.qtd * i.preco;
-    total += itemTotal;
-    v_table.innerHTML += `<tr>
-      <td>${i.nome}</td>
-      <td>${i.qtd}</td>
-      <td>${i.unidade}</td>
-      <td>R$ ${i.preco}</td>
-      <td>R$ ${itemTotal.toFixed(2)}</td>
-    </tr>`;
-  });
+let ajusteV=parseFloat(ajusteValor.value)||0;
+let ajusteP=parseFloat(ajustePorc.value)||0;
+let ajusteVol=parseFloat(ajusteVolume.value)||0;
 
-  let ajusteValor = parseFloat(v_ajuste_valor.value || 0);
-  let ajustePct = parseFloat(v_ajuste_pct.value || 0);
-
-  total += ajusteValor;
-  total += total * (ajustePct/100);
-
-  v_total.innerText = total.toFixed(2);
+let volumeExtra=0;
+if(ajusteVol>0){
+itensVenda.forEach(i=>{
+volumeExtra+=i.qtd*(ajusteVol/100);
+});
 }
 
-v_ajuste_valor.oninput = renderVenda;
-v_ajuste_pct.oninput = renderVenda;
+total += ajusteV;
+total += total*(ajusteP/100);
+
+totalVenda.innerText=total.toFixed(2);
+}
+
+["ajusteValor","ajustePorc","ajusteVolume"].forEach(id=>{
+document.getElementById(id).oninput=renderItens;
+});
 
 function finalizarVenda(){
-  let vendas = JSON.parse(localStorage.getItem("vendas")||"[]");
-
-  vendas.push({
-    data:new Date().toLocaleString(),
-    itens:vendaItens,
-    total:parseFloat(v_total.innerText)
-  });
-
-  localStorage.setItem("vendas",JSON.stringify(vendas));
-  vendaItens=[];
-  renderVenda();
-  carregarHistoricos();
+let total=parseFloat(totalVenda.innerText);
+let data=new Date();
+vendas.push({data:data.toISOString(),itens:itensVenda,total});
+localStorage.setItem("vendas",JSON.stringify(vendas));
+itensVenda=[];
+renderItens();
+renderHist();
 }
 
 function addCompra(){
-  let compras = JSON.parse(localStorage.getItem("compras")||"[]");
-
-  compras.push({
-    produto:c_nome.value,
-    qtd:c_qtd.value,
-    unidade:c_unidade.value,
-    preco:c_preco.value,
-    data:new Date().toLocaleString(),
-    total:c_qtd.value*c_preco.value
-  });
-
-  localStorage.setItem("compras",JSON.stringify(compras));
-  carregarHistoricos();
+let nome=compraNome.value;
+let qtd=parseFloat(compraQtd.value);
+let preco=parseFloat(compraPreco.value);
+if(!nome||!qtd||!preco)return;
+let data=new Date();
+compras.push({data:data.toISOString(),nome,qtd,preco,total:qtd*preco});
+localStorage.setItem("compras",JSON.stringify(compras));
+renderHist();
 }
 
-function carregarHistoricos(){
-  let vendas = JSON.parse(localStorage.getItem("vendas")||"[]");
-  let compras = JSON.parse(localStorage.getItem("compras")||"[]");
+function renderHist(){
+histVendas.innerHTML="";
+histCompras.innerHTML="";
+let mes=new Date().getMonth();
+let ano=new Date().getFullYear();
+let tv=0,tc=0;
 
-  hist_vendas.innerHTML="";
-  let totalMesV=0;
-  vendas.forEach(v=>{
-    hist_vendas.innerHTML+=`<p>${v.data} — R$ ${v.total}</p>`;
-    totalMesV+=v.total;
-  });
-  hist_vendas.innerHTML+=`<strong>Total mês: R$ ${totalMesV.toFixed(2)}</strong>`;
+vendas.forEach(v=>{
+let d=new Date(v.data);
+histVendas.innerHTML+=`${d.toLocaleString()} - R$ ${v.total.toFixed(2)}<br>`;
+if(d.getMonth()==mes&&d.getFullYear()==ano)tv+=v.total;
+});
 
-  hist_compras.innerHTML="";
-  let totalMesC=0;
-  compras.forEach(c=>{
-    hist_compras.innerHTML+=`<p>${c.data} — ${c.produto} — R$ ${c.total}</p>`;
-    totalMesC+=c.total;
-  });
-  hist_compras.innerHTML+=`<strong>Gastos mês: R$ ${totalMesC.toFixed(2)}</strong>`;
+compras.forEach(c=>{
+let d=new Date(c.data);
+histCompras.innerHTML+=`${d.toLocaleString()} - ${c.nome} - R$ ${c.total.toFixed(2)}<br>`;
+if(d.getMonth()==mes&&d.getFullYear()==ano)tc+=c.total;
+});
+
+mesVendas.innerText=tv.toFixed(2);
+mesCompras.innerText=tc.toFixed(2);
 }
 
-carregarHistoricos();
+renderHist();
 </script>
 
 </body>
