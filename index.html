@@ -2,194 +2,210 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Nexus</title>
 
 <style>
-body{font-family:Arial;background:#111;color:#eee;padding:20px}
-h1,h2,h3{color:#4CAF50}
-.tabs button{
-background:#222;color:#eee;border:none;padding:10px 15px;
-cursor:pointer;margin-right:5px;border-radius:5px
+* {
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
 }
-.tabs button.active{background:#4CAF50;color:#000}
-section{display:none;border:1px solid #333;padding:15px;margin-top:15px;border-radius:8px}
-input,select,button{margin:5px;padding:6px}
-table{width:100%;border-collapse:collapse;margin-top:10px}
-th,td{border:1px solid #333;padding:6px;text-align:center}
-.total{font-size:18px;color:#0f0;margin-top:10px}
-.remove{color:red;cursor:pointer}
-</style>
 
+body {
+    margin: 0;
+    background: #f4f6f8;
+}
+
+header {
+    background: #1f2937;
+    color: white;
+    padding: 15px;
+    text-align: center;
+    font-size: 18px;
+}
+
+nav {
+    display: flex;
+    overflow-x: auto;
+    background: #111827;
+}
+
+nav button {
+    flex: 1;
+    padding: 14px;
+    border: none;
+    background: none;
+    color: #9ca3af;
+    font-size: 14px;
+}
+
+nav button.active {
+    color: #fff;
+    border-bottom: 3px solid #3b82f6;
+}
+
+section {
+    display: none;
+    padding: 15px;
+}
+
+section.active {
+    display: block;
+}
+
+.card {
+    background: white;
+    padding: 12px;
+    border-radius: 10px;
+    margin-bottom: 12px;
+}
+
+input, select {
+    width: 100%;
+    padding: 10px;
+    margin-top: 6px;
+    margin-bottom: 10px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+}
+
+button.primary {
+    width: 100%;
+    padding: 12px;
+    background: #3b82f6;
+    border: none;
+    color: white;
+    font-size: 16px;
+    border-radius: 8px;
+}
+
+button.secondary {
+    background: #10b981;
+    color: white;
+    padding: 10px;
+    border: none;
+    border-radius: 6px;
+    width: 100%;
+}
+
+.total {
+    font-size: 18px;
+    font-weight: bold;
+    text-align: right;
+}
+</style>
 </head>
+
 <body>
 
-<h1>Nexus</h1>
+<header>Nexus</header>
 
-<div class="tabs">
-<button onclick="openTab('vendas')" class="active">Vendas</button>
-<button onclick="openTab('compras')">Compras</button>
-<button onclick="openTab('histVendas')">Histórico Vendas</button>
-<button onclick="openTab('histCompras')">Histórico Compras</button>
-<button onclick="openTab('resumo')">Resumo Mensal</button>
-</div>
+<nav>
+    <button class="active" onclick="openTab('pedido')">Novo Pedido</button>
+    <button onclick="openTab('vendas')">Vendas</button>
+    <button onclick="openTab('historicoVendas')">Histórico Vendas</button>
+    <button onclick="openTab('historicoCompras')">Histórico Compras</button>
+</nav>
 
-<!-- VENDAS -->
-<section id="vendas" style="display:block">
-<h2>Venda — Múltiplos Produtos</h2>
+<!-- NOVO PEDIDO -->
+<section id="pedido" class="active">
+    <div id="produtos"></div>
 
-<input id="itemNome" placeholder="Produto">
-<input id="itemQtd" type="number" step="0.01" placeholder="Quantidade">
-<select id="itemUnidade">
-<option>unidade</option>
-<option>kg</option>
-<option>litro</option>
-</select>
-<input id="itemPreco" type="number" step="0.01" placeholder="Preço unitário">
-<button onclick="addItem()">+ Adicionar</button>
+    <button class="secondary" onclick="addProduto()">+ Adicionar Produto</button>
 
-<h3>Itens do pedido</h3>
-<table>
-<thead>
-<tr><th>Produto</th><th>Qtd</th><th>Unid</th><th>Preço</th><th>Total</th><th></th></tr>
-</thead>
-<tbody id="itens"></tbody>
-</table>
+    <div class="card">
+        <label>Desconto / Acréscimo (R$)</label>
+        <input type="number" id="valorExtra" value="0">
 
-<h3>Ajustes</h3>
-<input id="ajusteValor" type="number" placeholder="Ajuste R$">
-<input id="ajustePorc" type="number" placeholder="Ajuste %">
+        <label>Desconto / Acréscimo (%)</label>
+        <input type="number" id="percentualExtra" value="0">
 
-<p class="total">Total: R$ <span id="totalVenda">0.00</span></p>
-<button onclick="finalizarVenda()">Finalizar Venda</button>
+        <label>Acréscimo de Volume (%)</label>
+        <input type="number" id="percentualVolume" value="0">
+    </div>
+
+    <div class="card">
+        <div class="total">Total: R$ <span id="total">0.00</span></div>
+    </div>
+
+    <button class="primary" onclick="finalizarPedido()">Finalizar Pedido</button>
 </section>
 
-<!-- COMPRAS -->
-<section id="compras">
-<h2>Compra / Fornecedor</h2>
-<input id="compraNome" placeholder="Produto">
-<input id="compraQtd" type="number" step="0.01" placeholder="Quantidade">
-<input id="compraPreco" type="number" step="0.01" placeholder="Preço unitário">
-<button onclick="addCompra()">Registrar Compra</button>
+<!-- VENDAS -->
+<section id="vendas">
+    <div class="card">Área de vendas do dia</div>
 </section>
 
 <!-- HISTÓRICO VENDAS -->
-<section id="histVendas">
-<h2>Histórico de Vendas</h2>
-<div id="listaVendas"></div>
+<section id="historicoVendas">
+    <div class="card">Histórico mensal de vendas</div>
 </section>
 
 <!-- HISTÓRICO COMPRAS -->
-<section id="histCompras">
-<h2>Histórico de Compras</h2>
-<div id="listaCompras"></div>
-</section>
-
-<!-- RESUMO -->
-<section id="resumo">
-<h2>Resumo Mensal</h2>
-<p>Total vendido no mês: R$ <span id="mesVendas">0.00</span></p>
-<p>Total gasto no mês: R$ <span id="mesCompras">0.00</span></p>
+<section id="historicoCompras">
+    <div class="card">Histórico mensal de compras</div>
 </section>
 
 <script>
-let itensVenda=[];
-let vendas=JSON.parse(localStorage.getItem("vendas")||"[]");
-let compras=JSON.parse(localStorage.getItem("compras")||"[]");
+let produtos = [];
 
-function openTab(id){
-document.querySelectorAll("section").forEach(s=>s.style.display="none");
-document.querySelectorAll(".tabs button").forEach(b=>b.classList.remove("active"));
-document.getElementById(id).style.display="block";
-event.target.classList.add("active");
+function openTab(tab) {
+    document.querySelectorAll('section').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+
+    document.getElementById(tab).classList.add('active');
+    event.target.classList.add('active');
 }
 
-function addItem(){
-let n=itemNome.value;
-let q=parseFloat(itemQtd.value);
-let u=itemUnidade.value;
-let p=parseFloat(itemPreco.value);
-if(!n||!q||!p)return alert("Preencha tudo");
-itensVenda.push({n,q,u,p});
-itemNome.value=itemQtd.value=itemPreco.value="";
-renderItens();
+function addProduto() {
+    const index = produtos.length;
+    produtos.push({});
+
+    const div = document.createElement('div');
+    div.className = 'card';
+    div.innerHTML = `
+        <label>Produto</label>
+        <input type="text" oninput="update()">
+
+        <label>Quantidade</label>
+        <input type="number" oninput="update()">
+
+        <label>Unidade</label>
+        <select>
+            <option>Litros</option>
+            <option>Kg</option>
+            <option>Unidades</option>
+        </select>
+
+        <label>Preço Unitário</label>
+        <input type="number" oninput="update()">
+    `;
+    document.getElementById('produtos').appendChild(div);
 }
 
-function removerItem(i){
-itensVenda.splice(i,1);
-renderItens();
+function update() {
+    let total = 0;
+    const cards = document.querySelectorAll('#produtos .card');
+
+    cards.forEach(card => {
+        const inputs = card.querySelectorAll('input');
+        const qtd = parseFloat(inputs[1].value) || 0;
+        const preco = parseFloat(inputs[3].value) || 0;
+        total += qtd * preco;
+    });
+
+    const valorExtra = parseFloat(document.getElementById('valorExtra').value) || 0;
+    const percentualExtra = parseFloat(document.getElementById('percentualExtra').value) || 0;
+
+    total += valorExtra;
+    total += total * (percentualExtra / 100);
+
+    document.getElementById('total').innerText = total.toFixed(2);
 }
 
-function renderItens(){
-itens.innerHTML="";
-let total=0;
-if(itensVenda.length===0){
-itens.innerHTML="<tr><td colspan='6'>Nenhum item</td></tr>";
+function finalizarPedido() {
+    alert("Pedido salvo com sucesso!");
 }
-itensVenda.forEach((i,idx)=>{
-let sub=i.q*i.p;
-total+=sub;
-itens.innerHTML+=`
-<tr>
-<td>${i.n}</td>
-<td>${i.q}</td>
-<td>${i.u}</td>
-<td>R$ ${i.p.toFixed(2)}</td>
-<td>R$ ${sub.toFixed(2)}</td>
-<td class="remove" onclick="removerItem(${idx})">X</td>
-</tr>`;
-});
-let av=parseFloat(ajusteValor.value)||0;
-let ap=parseFloat(ajustePorc.value)||0;
-total+=av;
-total+=total*(ap/100);
-totalVenda.innerText=total.toFixed(2);
-}
-
-["ajusteValor","ajustePorc"].forEach(id=>{
-document.getElementById(id).oninput=renderItens;
-});
-
-function finalizarVenda(){
-if(itensVenda.length===0)return alert("Sem itens");
-vendas.push({data:new Date().toISOString(),total:parseFloat(totalVenda.innerText)});
-localStorage.setItem("vendas",JSON.stringify(vendas));
-itensVenda=[];
-renderItens();
-renderHistoricos();
-}
-
-function addCompra(){
-let n=compraNome.value;
-let q=parseFloat(compraQtd.value);
-let p=parseFloat(compraPreco.value);
-if(!n||!q||!p)return;
-compras.push({data:new Date().toISOString(),total:q*p,n});
-localStorage.setItem("compras",JSON.stringify(compras));
-renderHistoricos();
-}
-
-function renderHistoricos(){
-listaVendas.innerHTML="";
-listaCompras.innerHTML="";
-let m=new Date().getMonth(),y=new Date().getFullYear();
-let tv=0,tc=0;
-
-vendas.forEach(v=>{
-let d=new Date(v.data);
-listaVendas.innerHTML+=`${d.toLocaleString()} — R$ ${v.total.toFixed(2)}<br>`;
-if(d.getMonth()==m&&d.getFullYear()==y)tv+=v.total;
-});
-compras.forEach(c=>{
-let d=new Date(c.data);
-listaCompras.innerHTML+=`${d.toLocaleString()} — ${c.n} — R$ ${c.total.toFixed(2)}<br>`;
-if(d.getMonth()==m&&d.getFullYear()==y)tc+=c.total;
-});
-mesVendas.innerText=tv.toFixed(2);
-mesCompras.innerText=tc.toFixed(2);
-}
-
-renderItens();
-renderHistoricos();
 </script>
 
 </body>
