@@ -6,53 +6,59 @@
 <title>Nexus</title>
 
 <style>
-body {
-  margin: 0;
-  font-family: Arial, sans-serif;
-  background: #000;
-  color: #fff;
+body{
+  margin:0;
+  font-family:Arial,sans-serif;
+  background:#000;
+  color:#fff;
 }
-section { display: none; padding: 16px; }
-button {
-  padding: 12px;
-  background: #1db954;
-  border: none;
-  border-radius: 6px;
-  width: 100%;
-  margin-top: 8px;
-  font-size: 15px;
+section{display:none;padding:16px;}
+button{
+  width:100%;
+  padding:12px;
+  margin-top:8px;
+  background:#1db954;
+  border:none;
+  border-radius:6px;
+  font-size:15px;
 }
-input {
-  width: 100%;
-  padding: 10px;
-  margin-top: 6px;
-  border-radius: 4px;
-  border: none;
+input{
+  width:100%;
+  padding:10px;
+  margin-top:6px;
+  border-radius:4px;
+  border:none;
 }
-.nav {
-  display: flex;
-  gap: 6px;
+.card{
+  background:#111;
+  padding:12px;
+  margin-top:10px;
+  border-radius:6px;
 }
-.nav button {
-  flex: 1;
-  background: #111;
-  color: #fff;
+.nav{
+  display:flex;
+  gap:6px;
 }
-.card {
-  background: #111;
-  padding: 12px;
-  margin-top: 10px;
-  border-radius: 6px;
+.nav button{
+  flex:1;
+  background:#111;
 }
-.total-mes {
-  text-align: right;
-  margin-top: 10px;
-  font-weight: bold;
+textarea{
+  width:100%;
+  height:130px;
+  margin-top:10px;
 }
-textarea {
-  width: 100%;
-  height: 120px;
-  margin-top: 10px;
+.total{
+  text-align:right;
+  margin-top:10px;
+  font-weight:bold;
+}
+.item{
+  font-size:14px;
+  margin-top:4px;
+}
+.del{
+  background:#c0392b;
 }
 </style>
 </head>
@@ -61,146 +67,142 @@ textarea {
 
 <!-- LOGIN -->
 <section id="login" style="display:block">
-  <h2>Entrar</h2>
-  <button onclick="abrirConsentimento()">Entrar com Google</button>
+  <h2>Nexus</h2>
+  <button onclick="show('consent')">Entrar com Google</button>
 </section>
 
 <!-- CONSENTIMENTO -->
-<section id="consentimento">
-  <h3>Antes de continuar</h3>
+<section id="consent">
+  <h3>Termos de uso</h3>
   <p>
-    ✔️ Dados salvos na sua conta Google<br>
-    ❌ Cancelamento sem reembolso<br>
-    ✅ Acesso até o fim do mês pago
+    O Nexus é uma ferramenta de organização de vendas e compras.<br><br>
+    ✔ Seus dados ficam associados à sua conta Google.<br>
+    ✔ Mesmo cancelando o plano, você mantém acesso até o fim do período pago.<br>
+    ✔ Não realizamos reembolso de períodos já ativos.<br><br>
+    Nosso objetivo é facilitar sua gestão com transparência e segurança.
   </p>
-  <label>
-    <input type="checkbox" id="aceito"> Aceito os termos
-  </label>
-  <button onclick="confirmarConsentimento()">Continuar</button>
+  <label><input type="checkbox" id="ok"> Concordo com os termos</label>
+  <button onclick="aceitar()">Continuar</button>
 </section>
 
 <!-- PLANOS -->
 <section id="planos">
-  <h2>Planos</h2>
+  <h3>Escolha um plano</h3>
   <div class="card">
-    <b>Plano 5 pessoas</b>
-    <p>R$ 79/mês</p>
-    <button onclick="entrarNexus()">Assinar</button>
+    <b>5 usuários</b><br>R$ 59,90/mês
+    <button onclick="show('home')">Assinar</button>
   </div>
   <div class="card">
-    <b>Plano ilimitado</b>
-    <p>R$ 150/mês</p>
-    <button onclick="entrarNexus()">Assinar</button>
+    <b>Ilimitado</b><br>R$ 150,90/mês
+    <button onclick="show('home')">Assinar</button>
   </div>
 </section>
 
 <!-- HOME -->
 <section id="home">
 
-  <div class="nav">
-    <button onclick="aba('vendas')">Vendas</button>
-    <button onclick="aba('compras')">Fornecedores</button>
-    <button onclick="aba('histVendas')">Hist. Vendas</button>
-    <button onclick="aba('histCompras')">Hist. Compras</button>
-  </div>
+<div class="nav">
+  <button onclick="tab('vendas')">Vendas</button>
+  <button onclick="tab('compras')">Fornecedores</button>
+  <button onclick="tab('hv')">Hist. Vendas</button>
+  <button onclick="tab('hc')">Hist. Compras</button>
+</div>
 
-  <!-- VENDAS -->
-  <div id="vendas" class="card">
-    <h3>Venda</h3>
-    <input id="vProduto" placeholder="Produto">
-    <input id="vQtd" placeholder="Quantidade">
-    <input id="vPreco" placeholder="Preço unitário">
-    <button onclick="addVenda()">Adicionar item</button>
-    <div id="listaVenda"></div>
-    <button onclick="finalizarVenda()">Finalizar venda</button>
-  </div>
+<!-- VENDAS -->
+<div id="vendas" class="card">
+  <h3>Venda</h3>
+  <input id="cliente" placeholder="Nome do cliente">
+  <input id="vp" placeholder="Produto">
+  <input id="vq" placeholder="Quantidade">
+  <input id="vv" placeholder="Preço unitário">
+  <button onclick="addItemVenda()">Adicionar produto</button>
+  <div id="listaVenda"></div>
+  <button onclick="finalizarVenda()">Finalizar venda</button>
+</div>
 
-  <!-- COMPRAS -->
-  <div id="compras" class="card" style="display:none">
-    <h3>Compra</h3>
-    <input id="cProduto" placeholder="Produto">
-    <input id="cQtd" placeholder="Quantidade">
-    <input id="cPreco" placeholder="Preço unitário">
-    <button onclick="addCompra()">Adicionar item</button>
-    <div id="listaCompra"></div>
-    <button onclick="finalizarCompra()">Finalizar compra</button>
-  </div>
+<!-- COMPRAS -->
+<div id="compras" class="card" style="display:none">
+  <h3>Compra</h3>
+  <input id="fornecedor" placeholder="Nome do fornecedor">
+  <input id="cp" placeholder="Produto">
+  <input id="cq" placeholder="Quantidade">
+  <input id="cv" placeholder="Preço unitário">
+  <button onclick="addItemCompra()">Adicionar produto</button>
+  <div id="listaCompra"></div>
+  <button onclick="finalizarCompra()">Finalizar compra</button>
+</div>
 
-  <!-- HIST VENDAS -->
-  <div id="histVendas" class="card" style="display:none">
-    <h3>Histórico de Vendas</h3>
-    <textarea id="txtVendas" readonly></textarea>
-    <button onclick="copiar('txtVendas')">Copiar</button>
-    <div class="total-mes">Total do mês: R$ <span id="totalVendas">0</span></div>
-  </div>
+<!-- HIST VENDAS -->
+<div id="hv" class="card" style="display:none">
+  <h3>Histórico de vendas</h3>
+  <textarea id="histV" readonly></textarea>
+  <button onclick="copiar('histV')">Copiar</button>
+  <button class="del" onclick="limparVendas()">Apagar histórico</button>
+  <div class="total">Total mês: R$ <span id="tv">0</span></div>
+</div>
 
-  <!-- HIST COMPRAS -->
-  <div id="histCompras" class="card" style="display:none">
-    <h3>Histórico de Compras</h3>
-    <textarea id="txtCompras" readonly></textarea>
-    <button onclick="copiar('txtCompras')">Copiar</button>
-    <div class="total-mes">Gastos do mês: R$ <span id="totalCompras">0</span></div>
-  </div>
+<!-- HIST COMPRAS -->
+<div id="hc" class="card" style="display:none">
+  <h3>Histórico de compras</h3>
+  <textarea id="histC" readonly></textarea>
+  <button onclick="copiar('histC')">Copiar</button>
+  <button class="del" onclick="limparCompras()">Apagar histórico</button>
+  <div class="total">Gastos mês: R$ <span id="tc">0</span></div>
+</div>
 
 </section>
 
 <script>
-let vendasTemp = [];
-let comprasTemp = [];
-let totalVendas = 0;
-let totalCompras = 0;
+let itensVenda=[], itensCompra=[], totalV=0, totalC=0;
 
-function abrirConsentimento(){
-  tela('consentimento');
-}
-function confirmarConsentimento(){
-  if(!aceito.checked) return alert("Aceite os termos");
-  tela('planos');
-}
-function entrarNexus(){
-  tela('home');
-}
-function tela(id){
+function show(id){
   document.querySelectorAll("section").forEach(s=>s.style.display="none");
   document.getElementById(id).style.display="block";
 }
-function aba(id){
-  ['vendas','compras','histVendas','histCompras'].forEach(a=>{
-    document.getElementById(a).style.display="none";
-  });
+function aceitar(){
+  if(!ok.checked) return alert("Aceite os termos");
+  show('planos');
+}
+function tab(id){
+  ['vendas','compras','hv','hc'].forEach(t=>document.getElementById(t).style.display="none");
   document.getElementById(id).style.display="block";
 }
 
-function addVenda(){
-  let v = vQtd.value * vPreco.value;
-  vendasTemp.push(`${vProduto.value} - ${vQtd.value} x ${vPreco.value} = ${v}`);
-  listaVenda.innerHTML += `<div>${vendasTemp.at(-1)}</div>`;
+function addItemVenda(){
+  let t=vq.value*vv.value;
+  itensVenda.push(`${vp.value} - ${vq.value} x ${vv.value} = ${t}`);
+  listaVenda.innerHTML+=`<div class="item">${itensVenda.at(-1)}</div>`;
 }
 function finalizarVenda(){
-  let soma = vendasTemp.reduce((s,i)=>s+parseFloat(i.split("=").pop()),0);
-  totalVendas += soma;
-  txtVendas.value += new Date().toLocaleString()+"\n"+vendasTemp.join("\n")+"\nTotal: "+soma+"\n\n";
-  document.getElementById("totalVendas").innerText = totalVendas;
-  vendasTemp=[]; listaVenda.innerHTML="";
+  let soma=itensVenda.reduce((s,i)=>s+parseFloat(i.split('=').pop()),0);
+  totalV+=soma;
+  histV.value+=`${new Date().toLocaleString()}\nCliente: ${cliente.value}\n${itensVenda.join("\n")}\nTotal: ${soma}\n\n`;
+  tv.innerText=totalV;
+  itensVenda=[]; listaVenda.innerHTML="";
 }
 
-function addCompra(){
-  let v = cQtd.value * cPreco.value;
-  comprasTemp.push(`${cProduto.value} - ${cQtd.value} x ${cPreco.value} = ${v}`);
-  listaCompra.innerHTML += `<div>${comprasTemp.at(-1)}</div>`;
+function addItemCompra(){
+  let t=cq.value*cv.value;
+  itensCompra.push(`${cp.value} - ${cq.value} x ${cv.value} = ${t}`);
+  listaCompra.innerHTML+=`<div class="item">${itensCompra.at(-1)}</div>`;
 }
 function finalizarCompra(){
-  let soma = comprasTemp.reduce((s,i)=>s+parseFloat(i.split("=").pop()),0);
-  totalCompras += soma;
-  txtCompras.value += new Date().toLocaleString()+"\n"+comprasTemp.join("\n")+"\nTotal: "+soma+"\n\n";
-  document.getElementById("totalCompras").innerText = totalCompras;
-  comprasTemp=[]; listaCompra.innerHTML="";
+  let soma=itensCompra.reduce((s,i)=>s+parseFloat(i.split('=').pop()),0);
+  totalC+=soma;
+  histC.value+=`${new Date().toLocaleString()}\nFornecedor: ${fornecedor.value}\n${itensCompra.join("\n")}\nTotal: ${soma}\n\n`;
+  tc.innerText=totalC;
+  itensCompra=[]; listaCompra.innerHTML="";
 }
 
 function copiar(id){
-  let t = document.getElementById(id);
+  let t=document.getElementById(id);
   t.select(); document.execCommand("copy");
-  alert("Copiado");
+}
+function limparVendas(){
+  histV.value=""; totalV=0; tv.innerText=0;
+}
+function limparCompras(){
+  histC.value=""; totalC=0; tc.innerText=0;
 }
 </script>
 
