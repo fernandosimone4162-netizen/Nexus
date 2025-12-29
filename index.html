@@ -4,205 +4,173 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Nexus</title>
-
 <style>
 body{
-  margin:0;
-  font-family:Arial,sans-serif;
-  background:#000;
-  color:#fff;
+    margin:0;
+    font-family:Arial, sans-serif;
+    background:#000;
+    color:#fff;
 }
-section{display:none;padding:16px;}
+.tabs{
+    display:flex;
+    gap:10px;
+    padding:10px;
+}
+.tab{
+    flex:1;
+    background:#111;
+    padding:10px;
+    text-align:center;
+    border-radius:8px;
+    cursor:pointer;
+}
+.tab.active{
+    background:#1db954;
+    color:#000;
+}
+.section{
+    display:none;
+    padding:15px;
+}
+.section.active{display:block;}
+input,button{
+    width:100%;
+    padding:10px;
+    margin-top:8px;
+    border-radius:6px;
+    border:none;
+}
 button{
-  width:100%;
-  padding:12px;
-  margin-top:8px;
-  background:#1db954;
-  border:none;
-  border-radius:6px;
-  font-size:15px;
+    background:#1db954;
+    font-weight:bold;
 }
-input{
-  width:100%;
-  padding:10px;
-  margin-top:6px;
-  border-radius:4px;
-  border:none;
-}
-.card{
-  background:#111;
-  padding:12px;
-  margin-top:10px;
-  border-radius:6px;
-}
-.nav{
-  display:flex;
-  gap:6px;
-}
-.nav button{
-  flex:1;
-  background:#111;
-}
-textarea{
-  width:100%;
-  height:130px;
-  margin-top:10px;
-}
-.total{
-  text-align:right;
-  margin-top:10px;
-  font-weight:bold;
+.list{
+    margin-top:15px;
 }
 .item{
-  font-size:14px;
-  margin-top:4px;
+    background:#111;
+    padding:10px;
+    border-radius:6px;
+    margin-top:8px;
 }
-.del{
-  background:#c0392b;
+.delete{
+    background:#b00020;
+    margin-top:5px;
+}
+.total{
+    margin-top:15px;
+    font-weight:bold;
+    text-align:right;
 }
 </style>
 </head>
-
 <body>
 
-<!-- LOGIN -->
-<section id="login" style="display:block">
-  <h2>Nexus</h2>
-  <button onclick="show('consent')">Entrar com Google</button>
-</section>
-
-<!-- CONSENTIMENTO -->
-<section id="consent">
-  <h3>Termos de uso</h3>
-  <p>
-    O Nexus é uma ferramenta de organização de vendas e compras.<br><br>
-    ✔ Seus dados ficam associados à sua conta Google.<br>
-    ✔ Mesmo cancelando o plano, você mantém acesso até o fim do período pago.<br>
-    ✔ Não realizamos reembolso de períodos já ativos.<br><br>
-    Nosso objetivo é facilitar sua gestão com transparência e segurança.
-  </p>
-  <label><input type="checkbox" id="ok"> Concordo com os termos</label>
-  <button onclick="aceitar()">Continuar</button>
-</section>
-
-<!-- PLANOS -->
-<section id="planos">
-  <h3>Escolha um plano</h3>
-  <div class="card">
-    <b>5 usuários</b><br>R$ 59,90/mês
-    <button onclick="show('home')">Assinar</button>
-  </div>
-  <div class="card">
-    <b>Ilimitado</b><br>R$ 150,90/mês
-    <button onclick="show('home')">Assinar</button>
-  </div>
-</section>
-
-<!-- HOME -->
-<section id="home">
-
-<div class="nav">
-  <button onclick="tab('vendas')">Vendas</button>
-  <button onclick="tab('compras')">Fornecedores</button>
-  <button onclick="tab('hv')">Hist. Vendas</button>
-  <button onclick="tab('hc')">Hist. Compras</button>
+<div class="tabs">
+    <div class="tab active" onclick="openTab('vendas')">Vendas</div>
+    <div class="tab" onclick="openTab('compras')">Fornecedores</div>
+    <div class="tab" onclick="openTab('histVendas')">Hist. Vendas</div>
+    <div class="tab" onclick="openTab('histCompras')">Hist. Compras</div>
 </div>
 
 <!-- VENDAS -->
-<div id="vendas" class="card">
-  <h3>Venda</h3>
-  <input id="cliente" placeholder="Nome do cliente">
-  <input id="vp" placeholder="Produto">
-  <input id="vq" placeholder="Quantidade">
-  <input id="vv" placeholder="Preço unitário">
-  <button onclick="addItemVenda()">Adicionar produto</button>
-  <div id="listaVenda"></div>
-  <button onclick="finalizarVenda()">Finalizar venda</button>
+<div id="vendas" class="section active">
+    <input id="cliente" placeholder="Nome do cliente">
+    <input id="prodV" placeholder="Produto">
+    <input id="qtdV" type="number" placeholder="Quantidade">
+    <input id="precoV" type="number" placeholder="Preço unitário">
+    <button onclick="addItemVenda()">Adicionar item</button>
+    <div id="listaVenda"></div>
+    <button onclick="finalizarVenda()">Finalizar venda</button>
 </div>
 
 <!-- COMPRAS -->
-<div id="compras" class="card" style="display:none">
-  <h3>Compra</h3>
-  <input id="fornecedor" placeholder="Nome do fornecedor">
-  <input id="cp" placeholder="Produto">
-  <input id="cq" placeholder="Quantidade">
-  <input id="cv" placeholder="Preço unitário">
-  <button onclick="addItemCompra()">Adicionar produto</button>
-  <div id="listaCompra"></div>
-  <button onclick="finalizarCompra()">Finalizar compra</button>
+<div id="compras" class="section">
+    <input id="fornecedor" placeholder="Nome do fornecedor">
+    <input id="prodC" placeholder="Produto">
+    <input id="qtdC" type="number" placeholder="Quantidade">
+    <input id="precoC" type="number" placeholder="Preço unitário">
+    <button onclick="addItemCompra()">Adicionar item</button>
+    <div id="listaCompra"></div>
+    <button onclick="finalizarCompra()">Finalizar compra</button>
 </div>
 
-<!-- HIST VENDAS -->
-<div id="hv" class="card" style="display:none">
-  <h3>Histórico de vendas</h3>
-  <textarea id="histV" readonly></textarea>
-  <button onclick="copiar('histV')">Copiar</button>
-  <button class="del" onclick="limparVendas()">Apagar histórico</button>
-  <div class="total">Total mês: R$ <span id="tv">0</span></div>
+<!-- HISTÓRICOS -->
+<div id="histVendas" class="section">
+    <div id="histVendaList"></div>
+    <div class="total" id="totalVendas"></div>
 </div>
 
-<!-- HIST COMPRAS -->
-<div id="hc" class="card" style="display:none">
-  <h3>Histórico de compras</h3>
-  <textarea id="histC" readonly></textarea>
-  <button onclick="copiar('histC')">Copiar</button>
-  <button class="del" onclick="limparCompras()">Apagar histórico</button>
-  <div class="total">Gastos mês: R$ <span id="tc">0</span></div>
+<div id="histCompras" class="section">
+    <div id="histCompraList"></div>
+    <div class="total" id="totalCompras"></div>
 </div>
-
-</section>
 
 <script>
-let itensVenda=[], itensCompra=[], totalV=0, totalC=0;
+let vendaAtual=[], compraAtual=[];
+let histVendas=[], histCompras=[];
 
-function show(id){
-  document.querySelectorAll("section").forEach(s=>s.style.display="none");
-  document.getElementById(id).style.display="block";
-}
-function aceitar(){
-  if(!ok.checked) return alert("Aceite os termos");
-  show('planos');
-}
-function tab(id){
-  ['vendas','compras','hv','hc'].forEach(t=>document.getElementById(t).style.display="none");
-  document.getElementById(id).style.display="block";
+function openTab(id){
+    document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    event.target.classList.add('active');
 }
 
 function addItemVenda(){
-  let t=vq.value*vv.value;
-  itensVenda.push(`${vp.value} - ${vq.value} x ${vv.value} = ${t}`);
-  listaVenda.innerHTML+=`<div class="item">${itensVenda.at(-1)}</div>`;
-}
-function finalizarVenda(){
-  let soma=itensVenda.reduce((s,i)=>s+parseFloat(i.split('=').pop()),0);
-  totalV+=soma;
-  histV.value+=`${new Date().toLocaleString()}\nCliente: ${cliente.value}\n${itensVenda.join("\n")}\nTotal: ${soma}\n\n`;
-  tv.innerText=totalV;
-  itensVenda=[]; listaVenda.innerHTML="";
+    let p=prodV.value,q=qtdV.value,pr=precoV.value;
+    if(!p||!q||!pr) return;
+    vendaAtual.push({p,q,pr});
+    renderTemp('listaVenda',vendaAtual);
+    prodV.value=qtdV.value=precoV.value='';
 }
 
 function addItemCompra(){
-  let t=cq.value*cv.value;
-  itensCompra.push(`${cp.value} - ${cq.value} x ${cv.value} = ${t}`);
-  listaCompra.innerHTML+=`<div class="item">${itensCompra.at(-1)}</div>`;
-}
-function finalizarCompra(){
-  let soma=itensCompra.reduce((s,i)=>s+parseFloat(i.split('=').pop()),0);
-  totalC+=soma;
-  histC.value+=`${new Date().toLocaleString()}\nFornecedor: ${fornecedor.value}\n${itensCompra.join("\n")}\nTotal: ${soma}\n\n`;
-  tc.innerText=totalC;
-  itensCompra=[]; listaCompra.innerHTML="";
+    let p=prodC.value,q=qtdC.value,pr=precoC.value;
+    if(!p||!q||!pr) return;
+    compraAtual.push({p,q,pr});
+    renderTemp('listaCompra',compraAtual);
+    prodC.value=qtdC.value=precoC.value='';
 }
 
-function copiar(id){
-  let t=document.getElementById(id);
-  t.select(); document.execCommand("copy");
+function renderTemp(el,list){
+    document.getElementById(el).innerHTML=list.map(i=>`${i.p} - ${i.q} x ${i.pr}`).join('<br>');
 }
-function limparVendas(){
-  histV.value=""; totalV=0; tv.innerText=0;
+
+function finalizarVenda(){
+    let total=vendaAtual.reduce((s,i)=>s+i.q*i.pr,0);
+    histVendas.push({cliente:cliente.value,itens:vendaAtual,total,data:new Date()});
+    vendaAtual=[]; cliente.value='';
+    document.getElementById('listaVenda').innerHTML='';
+    renderHist();
 }
-function limparCompras(){
-  histC.value=""; totalC=0; tc.innerText=0;
+
+function finalizarCompra(){
+    let total=compraAtual.reduce((s,i)=>s+i.q*i.pr,0);
+    histCompras.push({fornecedor:fornecedor.value,itens:compraAtual,total,data:new Date()});
+    compraAtual=[]; fornecedor.value='';
+    document.getElementById('listaCompra').innerHTML='';
+    renderHist();
+}
+
+function renderHist(){
+    let tv=0,tc=0;
+    histVendaList.innerHTML=histVendas.map((v,i)=>{
+        tv+=v.total;
+        return `<div class="item">
+        ${v.cliente} | ${v.data.toLocaleString()}<br>Total: R$ ${v.total.toFixed(2)}
+        <button class="delete" onclick="histVendas.splice(${i},1);renderHist()">Excluir</button>
+        </div>`;
+    }).join('');
+    histCompraList.innerHTML=histCompras.map((c,i)=>{
+        tc+=c.total;
+        return `<div class="item">
+        ${c.fornecedor} | ${c.data.toLocaleString()}<br>Total: R$ ${c.total.toFixed(2)}
+        <button class="delete" onclick="histCompras.splice(${i},1);renderHist()">Excluir</button>
+        </div>`;
+    }).join('');
+    totalVendas.innerText=`Total do mês: R$ ${tv.toFixed(2)}`;
+    totalCompras.innerText=`Total do mês: R$ ${tc.toFixed(2)}`;
 }
 </script>
 
