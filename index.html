@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Nexus</title>
+
 <style>
 body{
     margin:0;
@@ -13,7 +14,7 @@ body{
 }
 .tabs{
     display:flex;
-    gap:10px;
+    gap:8px;
     padding:10px;
 }
 .tab{
@@ -33,6 +34,7 @@ body{
     padding:15px;
 }
 .section.active{display:block;}
+
 input,button{
     width:100%;
     padding:10px;
@@ -44,9 +46,6 @@ button{
     background:#1db954;
     font-weight:bold;
 }
-.list{
-    margin-top:15px;
-}
 .item{
     background:#111;
     padding:10px;
@@ -57,6 +56,10 @@ button{
     background:#b00020;
     margin-top:5px;
 }
+.copy{
+    background:#444;
+    margin-top:5px;
+}
 .total{
     margin-top:15px;
     font-weight:bold;
@@ -64,13 +67,14 @@ button{
 }
 </style>
 </head>
+
 <body>
 
 <div class="tabs">
     <div class="tab active" onclick="openTab('vendas')">Vendas</div>
     <div class="tab" onclick="openTab('compras')">Fornecedores</div>
-    <div class="tab" onclick="openTab('histVendas')">Hist. Vendas</div>
-    <div class="tab" onclick="openTab('histCompras')">Hist. Compras</div>
+    <div class="tab" onclick="openTab('histV')">Hist. Vendas</div>
+    <div class="tab" onclick="openTab('histC')">Hist. Compras</div>
 </div>
 
 <!-- VENDAS -->
@@ -79,8 +83,9 @@ button{
     <input id="prodV" placeholder="Produto">
     <input id="qtdV" type="number" placeholder="Quantidade">
     <input id="precoV" type="number" placeholder="Preço unitário">
-    <button onclick="addItemVenda()">Adicionar item</button>
+    <button onclick="addItemVenda()">Adicionar produto</button>
     <div id="listaVenda"></div>
+    <div class="total" id="totalVenda"></div>
     <button onclick="finalizarVenda()">Finalizar venda</button>
 </div>
 
@@ -90,21 +95,15 @@ button{
     <input id="prodC" placeholder="Produto">
     <input id="qtdC" type="number" placeholder="Quantidade">
     <input id="precoC" type="number" placeholder="Preço unitário">
-    <button onclick="addItemCompra()">Adicionar item</button>
+    <button onclick="addItemCompra()">Adicionar produto</button>
     <div id="listaCompra"></div>
+    <div class="total" id="totalCompra"></div>
     <button onclick="finalizarCompra()">Finalizar compra</button>
 </div>
 
-<!-- HISTÓRICOS -->
-<div id="histVendas" class="section">
-    <div id="histVendaList"></div>
-    <div class="total" id="totalVendas"></div>
-</div>
-
-<div id="histCompras" class="section">
-    <div id="histCompraList"></div>
-    <div class="total" id="totalCompras"></div>
-</div>
+<!-- HISTÓRICO -->
+<div id="histV" class="section"></div>
+<div id="histC" class="section"></div>
 
 <script>
 let vendaAtual=[], compraAtual=[];
@@ -117,60 +116,96 @@ function openTab(id){
     event.target.classList.add('active');
 }
 
+/* VENDAS */
 function addItemVenda(){
-    let p=prodV.value,q=qtdV.value,pr=precoV.value;
+    let p=prodV.value, q=+qtdV.value, pr=+precoV.value;
     if(!p||!q||!pr) return;
     vendaAtual.push({p,q,pr});
-    renderTemp('listaVenda',vendaAtual);
+    renderVendaTemp();
     prodV.value=qtdV.value=precoV.value='';
 }
+function renderVendaTemp(){
+    let total=0;
+    listaVenda.innerHTML=vendaAtual.map(i=>{
+        total+=i.q*i.pr;
+        return `${i.p} — ${i.q} x ${i.pr}`;
+    }).join('<br>');
+    totalVenda.innerText=`Total: R$ ${total.toFixed(2)}`;
+}
+function finalizarVenda(){
+    if(!vendaAtual.length) return;
+    histVendas.push({
+        cliente:cliente.value,
+        itens:[...vendaAtual],
+        total:vendaAtual.reduce((s,i)=>s+i.q*i.pr,0),
+        data:new Date()
+    });
+    vendaAtual=[]; cliente.value='';
+    listaVenda.innerHTML=''; totalVenda.innerText='';
+    renderHistoricos();
+}
 
+/* COMPRAS */
 function addItemCompra(){
-    let p=prodC.value,q=qtdC.value,pr=precoC.value;
+    let p=prodC.value, q=+qtdC.value, pr=+precoC.value;
     if(!p||!q||!pr) return;
     compraAtual.push({p,q,pr});
-    renderTemp('listaCompra',compraAtual);
+    renderCompraTemp();
     prodC.value=qtdC.value=precoC.value='';
 }
-
-function renderTemp(el,list){
-    document.getElementById(el).innerHTML=list.map(i=>`${i.p} - ${i.q} x ${i.pr}`).join('<br>');
+function renderCompraTemp(){
+    let total=0;
+    listaCompra.innerHTML=compraAtual.map(i=>{
+        total+=i.q*i.pr;
+        return `${i.p} — ${i.q} x ${i.pr}`;
+    }).join('<br>');
+    totalCompra.innerText=`Total: R$ ${total.toFixed(2)}`;
 }
-
-function finalizarVenda(){
-    let total=vendaAtual.reduce((s,i)=>s+i.q*i.pr,0);
-    histVendas.push({cliente:cliente.value,itens:vendaAtual,total,data:new Date()});
-    vendaAtual=[]; cliente.value='';
-    document.getElementById('listaVenda').innerHTML='';
-    renderHist();
-}
-
 function finalizarCompra(){
-    let total=compraAtual.reduce((s,i)=>s+i.q*i.pr,0);
-    histCompras.push({fornecedor:fornecedor.value,itens:compraAtual,total,data:new Date()});
+    if(!compraAtual.length) return;
+    histCompras.push({
+        fornecedor:fornecedor.value,
+        itens:[...compraAtual],
+        total:compraAtual.reduce((s,i)=>s+i.q*i.pr,0),
+        data:new Date()
+    });
     compraAtual=[]; fornecedor.value='';
-    document.getElementById('listaCompra').innerHTML='';
-    renderHist();
+    listaCompra.innerHTML=''; totalCompra.innerText='';
+    renderHistoricos();
 }
 
-function renderHist(){
-    let tv=0,tc=0;
-    histVendaList.innerHTML=histVendas.map((v,i)=>{
+/* HISTÓRICOS + COPIAR */
+function copiarTexto(texto){
+    navigator.clipboard.writeText(texto);
+    alert('Copiado!');
+}
+
+function renderHistoricos(){
+    let tv=0, tc=0;
+
+    histV.innerHTML=histVendas.map((v,i)=>{
         tv+=v.total;
+        let txt=`Venda - ${v.cliente}\n${v.data.toLocaleString()}\n`+
+        v.itens.map(it=>`${it.p} ${it.q}x${it.pr}`).join('\n')+
+        `\nTotal: R$ ${v.total}`;
         return `<div class="item">
-        ${v.cliente} | ${v.data.toLocaleString()}<br>Total: R$ ${v.total.toFixed(2)}
-        <button class="delete" onclick="histVendas.splice(${i},1);renderHist()">Excluir</button>
+        ${v.cliente} | R$ ${v.total.toFixed(2)}
+        <button class="copy" onclick="copiarTexto(\`${txt}\`)">Copiar</button>
+        <button class="delete" onclick="histVendas.splice(${i},1);renderHistoricos()">Excluir</button>
         </div>`;
-    }).join('');
-    histCompraList.innerHTML=histCompras.map((c,i)=>{
+    }).join('')+`<div class="total">Total do mês: R$ ${tv.toFixed(2)}</div>`;
+
+    histC.innerHTML=histCompras.map((c,i)=>{
         tc+=c.total;
+        let txt=`Compra - ${c.fornecedor}\n${c.data.toLocaleString()}\n`+
+        c.itens.map(it=>`${it.p} ${it.q}x${it.pr}`).join('\n')+
+        `\nTotal: R$ ${c.total}`;
         return `<div class="item">
-        ${c.fornecedor} | ${c.data.toLocaleString()}<br>Total: R$ ${c.total.toFixed(2)}
-        <button class="delete" onclick="histCompras.splice(${i},1);renderHist()">Excluir</button>
+        ${c.fornecedor} | R$ ${c.total.toFixed(2)}
+        <button class="copy" onclick="copiarTexto(\`${txt}\`)">Copiar</button>
+        <button class="delete" onclick="histCompras.splice(${i},1);renderHistoricos()">Excluir</button>
         </div>`;
-    }).join('');
-    totalVendas.innerText=`Total do mês: R$ ${tv.toFixed(2)}`;
-    totalCompras.innerText=`Total do mês: R$ ${tc.toFixed(2)}`;
+    }).join('')+`<div class="total">Total do mês: R$ ${tc.toFixed(2)}</div>`;
 }
 </script>
 
