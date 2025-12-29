@@ -7,14 +7,11 @@
 
 <style>
 * { box-sizing: border-box; font-family: Arial, sans-serif; }
-body {
-  margin: 0;
-  background: #0f172a;
-  color: #e5e7eb;
-}
+body { margin: 0; background: #f4f6f8; }
 
 header {
-  background: #020617;
+  background: #1f2937;
+  color: white;
   padding: 15px;
   text-align: center;
   font-size: 18px;
@@ -22,7 +19,7 @@ header {
 
 nav {
   display: flex;
-  background: #020617;
+  background: #111827;
 }
 
 nav button {
@@ -30,7 +27,7 @@ nav button {
   padding: 12px;
   border: none;
   background: none;
-  color: #64748b;
+  color: #9ca3af;
 }
 
 nav button.active {
@@ -38,17 +35,11 @@ nav button.active {
   border-bottom: 3px solid #3b82f6;
 }
 
-section {
-  display: none;
-  padding: 15px;
-  min-height: calc(100vh - 120px);
-  position: relative;
-}
-
+section { display: none; padding: 15px; min-height: calc(100vh - 120px); }
 section.active { display: block; }
 
 .card {
-  background: #020617;
+  background: white;
   padding: 12px;
   border-radius: 10px;
   margin-bottom: 10px;
@@ -56,10 +47,8 @@ section.active { display: block; }
 
 input {
   width: 100%;
-  padding: 10px;
+  padding: 8px;
   margin-bottom: 8px;
-  border-radius: 6px;
-  border: none;
 }
 
 button {
@@ -67,6 +56,7 @@ button {
   width: 100%;
   border: none;
   border-radius: 8px;
+  margin-bottom: 8px;
 }
 
 .primary { background: #3b82f6; color: white; }
@@ -75,15 +65,22 @@ button {
 .total {
   font-weight: bold;
   text-align: right;
-  margin-top: 10px;
 }
 
-.mensal {
-  position: absolute;
+.small {
+  font-size: 13px;
+  color: #555;
+}
+
+.fixed-total {
+  position: fixed;
   bottom: 10px;
-  right: 15px;
-  font-weight: bold;
-  color: #22c55e;
+  right: 10px;
+  background: #1f2937;
+  color: white;
+  padding: 10px 14px;
+  border-radius: 10px;
+  font-size: 14px;
 }
 </style>
 </head>
@@ -93,14 +90,14 @@ button {
 <header>Nexus</header>
 
 <nav>
-  <button class="active" onclick="openTab('pedido')">Venda</button>
+  <button class="active" onclick="openTab('venda')">Venda</button>
   <button onclick="openTab('compra')">Compra</button>
   <button onclick="openTab('histVendas')">Hist. Vendas</button>
   <button onclick="openTab('histCompras')">Hist. Compras</button>
 </nav>
 
 <!-- VENDA -->
-<section id="pedido" class="active">
+<section id="venda" class="active">
   <div id="produtosVenda"></div>
   <button class="secondary" onclick="addProduto('Venda')">+ Produto</button>
   <div class="card total">Total: R$ <span id="totalVenda">0.00</span></div>
@@ -118,15 +115,17 @@ button {
 
 <!-- HISTÓRICO VENDAS -->
 <section id="histVendas">
+  <button class="secondary" onclick="copiarVendas()">Copiar resumo do mês</button>
   <div id="listaVendas"></div>
-  <div class="mensal">Total mês: R$ <span id="totalVendasMes">0.00</span></div>
 </section>
 
 <!-- HISTÓRICO COMPRAS -->
 <section id="histCompras">
+  <button class="secondary" onclick="copiarCompras()">Copiar resumo do mês</button>
   <div id="listaCompras"></div>
-  <div class="mensal">Gastos mês: R$ <span id="totalComprasMes">0.00</span></div>
 </section>
+
+<div id="totalMensal" class="fixed-total" style="display:none;"></div>
 
 <script>
 let vendas = [];
@@ -137,6 +136,7 @@ function openTab(tab) {
   document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
   document.getElementById(tab).classList.add('active');
   event.target.classList.add('active');
+  atualizarTotalMensal(tab);
 }
 
 function addProduto(tipo) {
@@ -147,7 +147,7 @@ function addProduto(tipo) {
     <input type="number" placeholder="Quantidade" oninput="calcular()">
     <input type="number" placeholder="Preço Unitário" oninput="calcular()">
   `;
-  document.getElementById(\`produtos\${tipo}\`).appendChild(div);
+  document.getElementById(`produtos${tipo}`).appendChild(div);
 }
 
 function calcular() {
@@ -157,17 +157,18 @@ function calcular() {
 
 function calcularTotal(tipo) {
   let total = 0;
-  document.querySelectorAll(\`#produtos\${tipo} .card\`).forEach(c => {
+  document.querySelectorAll(`#produtos${tipo} .card`).forEach(c => {
     const i = c.querySelectorAll('input');
     total += (parseFloat(i[1].value)||0)*(parseFloat(i[2].value)||0);
   });
-  document.getElementById(\`total\${tipo}\`).innerText = total.toFixed(2);
+  document.getElementById(`total${tipo}`).innerText = total.toFixed(2);
   return total;
 }
 
 function finalizarVenda() {
   vendas.push({ data: new Date(), total: calcularTotal('Venda') });
   renderVendas();
+  alert("Venda salva");
 }
 
 function finalizarCompra() {
@@ -177,24 +178,61 @@ function finalizarCompra() {
     total: calcularTotal('Compra')
   });
   renderCompras();
+  alert("Compra salva");
 }
 
 function renderVendas() {
-  let totalMes = 0;
-  listaVendas.innerHTML = vendas.map(v => {
-    totalMes += v.total;
-    return `<div class="card">${v.data.toLocaleString()}<br><b>R$ ${v.total.toFixed(2)}</b></div>`;
-  }).join('');
-  totalVendasMes.innerText = totalMes.toFixed(2);
+  listaVendas.innerHTML = vendas.map(v =>
+    `<div class="card">
+      <div class="small">${v.data.toLocaleString()}</div>
+      <b>R$ ${v.total.toFixed(2)}</b>
+    </div>`
+  ).join('');
 }
 
 function renderCompras() {
-  let totalMes = 0;
-  listaCompras.innerHTML = compras.map(c => {
-    totalMes += c.total;
-    return `<div class="card">${c.data.toLocaleString()}<br>${c.fornecedor}<br><b>R$ ${c.total.toFixed(2)}</b></div>`;
-  }).join('');
-  totalComprasMes.innerText = totalMes.toFixed(2);
+  listaCompras.innerHTML = compras.map(c =>
+    `<div class="card">
+      <div class="small">${c.data.toLocaleString()}</div>
+      <div>${c.fornecedor}</div>
+      <b>R$ ${c.total.toFixed(2)}</b>
+    </div>`
+  ).join('');
+}
+
+function atualizarTotalMensal(tab) {
+  let total = 0;
+  if (tab === 'histVendas') {
+    total = vendas.reduce((s,v)=>s+v.total,0);
+    totalMensal.innerText = `Total vendido no mês: R$ ${total.toFixed(2)}`;
+    totalMensal.style.display = 'block';
+  } else if (tab === 'histCompras') {
+    total = compras.reduce((s,c)=>s+c.total,0);
+    totalMensal.innerText = `Gasto no mês: R$ ${total.toFixed(2)}`;
+    totalMensal.style.display = 'block';
+  } else {
+    totalMensal.style.display = 'none';
+  }
+}
+
+function copiarVendas() {
+  let texto = "📊 VENDAS DO MÊS\n\n";
+  vendas.forEach(v => {
+    texto += `${v.data.toLocaleString()} - R$ ${v.total.toFixed(2)}\n`;
+  });
+  texto += `\nTotal do mês: R$ ${vendas.reduce((s,v)=>s+v.total,0).toFixed(2)}`;
+  navigator.clipboard.writeText(texto);
+  alert("Resumo copiado!");
+}
+
+function copiarCompras() {
+  let texto = "📦 COMPRAS DO MÊS\n\n";
+  compras.forEach(c => {
+    texto += `${c.data.toLocaleString()} - ${c.fornecedor} - R$ ${c.total.toFixed(2)}\n`;
+  });
+  texto += `\nTotal do mês: R$ ${compras.reduce((s,c)=>s+c.total,0).toFixed(2)}`;
+  navigator.clipboard.writeText(texto);
+  alert("Resumo copiado!");
 }
 </script>
 
