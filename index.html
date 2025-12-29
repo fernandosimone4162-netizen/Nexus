@@ -6,233 +6,201 @@
 <title>Nexus</title>
 
 <style>
-* { box-sizing: border-box; font-family: Arial, sans-serif; }
-body { margin: 0; background: #f4f6f8; }
-
-header {
-  background: #1f2937;
-  color: white;
-  padding: 15px;
-  text-align: center;
-  font-size: 18px;
-}
-
-nav {
-  display: flex;
-  background: #111827;
-}
-
-nav button {
-  flex: 1;
-  padding: 12px;
-  border: none;
-  background: none;
-  color: #9ca3af;
-}
-
-nav button.active {
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #000;
   color: #fff;
-  border-bottom: 3px solid #3b82f6;
 }
-
-section { display: none; padding: 15px; min-height: calc(100vh - 120px); }
-section.active { display: block; }
-
-.card {
-  background: white;
+section { display: none; padding: 16px; }
+button {
   padding: 12px;
-  border-radius: 10px;
-  margin-bottom: 10px;
+  background: #1db954;
+  border: none;
+  border-radius: 6px;
+  width: 100%;
+  margin-top: 8px;
+  font-size: 15px;
 }
-
 input {
   width: 100%;
-  padding: 8px;
-  margin-bottom: 8px;
-}
-
-button {
   padding: 10px;
-  width: 100%;
+  margin-top: 6px;
+  border-radius: 4px;
   border: none;
-  border-radius: 8px;
-  margin-bottom: 8px;
 }
-
-.primary { background: #3b82f6; color: white; }
-.secondary { background: #10b981; color: white; }
-
-.total {
-  font-weight: bold;
+.nav {
+  display: flex;
+  gap: 6px;
+}
+.nav button {
+  flex: 1;
+  background: #111;
+  color: #fff;
+}
+.card {
+  background: #111;
+  padding: 12px;
+  margin-top: 10px;
+  border-radius: 6px;
+}
+.total-mes {
   text-align: right;
+  margin-top: 10px;
+  font-weight: bold;
 }
-
-.small {
-  font-size: 13px;
-  color: #555;
-}
-
-.fixed-total {
-  position: fixed;
-  bottom: 10px;
-  right: 10px;
-  background: #1f2937;
-  color: white;
-  padding: 10px 14px;
-  border-radius: 10px;
-  font-size: 14px;
+textarea {
+  width: 100%;
+  height: 120px;
+  margin-top: 10px;
 }
 </style>
 </head>
 
 <body>
 
-<header>Nexus</header>
-
-<nav>
-  <button class="active" onclick="openTab('venda')">Venda</button>
-  <button onclick="openTab('compra')">Compra</button>
-  <button onclick="openTab('histVendas')">Hist. Vendas</button>
-  <button onclick="openTab('histCompras')">Hist. Compras</button>
-</nav>
-
-<!-- VENDA -->
-<section id="venda" class="active">
-  <div id="produtosVenda"></div>
-  <button class="secondary" onclick="addProduto('Venda')">+ Produto</button>
-  <div class="card total">Total: R$ <span id="totalVenda">0.00</span></div>
-  <button class="primary" onclick="finalizarVenda()">Salvar Venda</button>
+<!-- LOGIN -->
+<section id="login" style="display:block">
+  <h2>Entrar</h2>
+  <button onclick="abrirConsentimento()">Entrar com Google</button>
 </section>
 
-<!-- COMPRA -->
-<section id="compra">
-  <input placeholder="Fornecedor" id="fornecedor">
-  <div id="produtosCompra"></div>
-  <button class="secondary" onclick="addProduto('Compra')">+ Produto</button>
-  <div class="card total">Total: R$ <span id="totalCompra">0.00</span></div>
-  <button class="primary" onclick="finalizarCompra()">Salvar Compra</button>
+<!-- CONSENTIMENTO -->
+<section id="consentimento">
+  <h3>Antes de continuar</h3>
+  <p>
+    ✔️ Dados salvos na sua conta Google<br>
+    ❌ Cancelamento sem reembolso<br>
+    ✅ Acesso até o fim do mês pago
+  </p>
+  <label>
+    <input type="checkbox" id="aceito"> Aceito os termos
+  </label>
+  <button onclick="confirmarConsentimento()">Continuar</button>
 </section>
 
-<!-- HISTÓRICO VENDAS -->
-<section id="histVendas">
-  <button class="secondary" onclick="copiarVendas()">Copiar resumo do mês</button>
-  <div id="listaVendas"></div>
+<!-- PLANOS -->
+<section id="planos">
+  <h2>Planos</h2>
+  <div class="card">
+    <b>Plano 5 pessoas</b>
+    <p>R$ 79/mês</p>
+    <button onclick="entrarNexus()">Assinar</button>
+  </div>
+  <div class="card">
+    <b>Plano ilimitado</b>
+    <p>R$ 150/mês</p>
+    <button onclick="entrarNexus()">Assinar</button>
+  </div>
 </section>
 
-<!-- HISTÓRICO COMPRAS -->
-<section id="histCompras">
-  <button class="secondary" onclick="copiarCompras()">Copiar resumo do mês</button>
-  <div id="listaCompras"></div>
-</section>
+<!-- HOME -->
+<section id="home">
 
-<div id="totalMensal" class="fixed-total" style="display:none;"></div>
+  <div class="nav">
+    <button onclick="aba('vendas')">Vendas</button>
+    <button onclick="aba('compras')">Fornecedores</button>
+    <button onclick="aba('histVendas')">Hist. Vendas</button>
+    <button onclick="aba('histCompras')">Hist. Compras</button>
+  </div>
+
+  <!-- VENDAS -->
+  <div id="vendas" class="card">
+    <h3>Venda</h3>
+    <input id="vProduto" placeholder="Produto">
+    <input id="vQtd" placeholder="Quantidade">
+    <input id="vPreco" placeholder="Preço unitário">
+    <button onclick="addVenda()">Adicionar item</button>
+    <div id="listaVenda"></div>
+    <button onclick="finalizarVenda()">Finalizar venda</button>
+  </div>
+
+  <!-- COMPRAS -->
+  <div id="compras" class="card" style="display:none">
+    <h3>Compra</h3>
+    <input id="cProduto" placeholder="Produto">
+    <input id="cQtd" placeholder="Quantidade">
+    <input id="cPreco" placeholder="Preço unitário">
+    <button onclick="addCompra()">Adicionar item</button>
+    <div id="listaCompra"></div>
+    <button onclick="finalizarCompra()">Finalizar compra</button>
+  </div>
+
+  <!-- HIST VENDAS -->
+  <div id="histVendas" class="card" style="display:none">
+    <h3>Histórico de Vendas</h3>
+    <textarea id="txtVendas" readonly></textarea>
+    <button onclick="copiar('txtVendas')">Copiar</button>
+    <div class="total-mes">Total do mês: R$ <span id="totalVendas">0</span></div>
+  </div>
+
+  <!-- HIST COMPRAS -->
+  <div id="histCompras" class="card" style="display:none">
+    <h3>Histórico de Compras</h3>
+    <textarea id="txtCompras" readonly></textarea>
+    <button onclick="copiar('txtCompras')">Copiar</button>
+    <div class="total-mes">Gastos do mês: R$ <span id="totalCompras">0</span></div>
+  </div>
+
+</section>
 
 <script>
-let vendas = [];
-let compras = [];
+let vendasTemp = [];
+let comprasTemp = [];
+let totalVendas = 0;
+let totalCompras = 0;
 
-function openTab(tab) {
-  document.querySelectorAll('section').forEach(s => s.classList.remove('active'));
-  document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
-  document.getElementById(tab).classList.add('active');
-  event.target.classList.add('active');
-  atualizarTotalMensal(tab);
+function abrirConsentimento(){
+  tela('consentimento');
 }
-
-function addProduto(tipo) {
-  const div = document.createElement('div');
-  div.className = 'card';
-  div.innerHTML = `
-    <input placeholder="Produto">
-    <input type="number" placeholder="Quantidade" oninput="calcular()">
-    <input type="number" placeholder="Preço Unitário" oninput="calcular()">
-  `;
-  document.getElementById(`produtos${tipo}`).appendChild(div);
+function confirmarConsentimento(){
+  if(!aceito.checked) return alert("Aceite os termos");
+  tela('planos');
 }
-
-function calcular() {
-  calcularTotal('Venda');
-  calcularTotal('Compra');
+function entrarNexus(){
+  tela('home');
 }
-
-function calcularTotal(tipo) {
-  let total = 0;
-  document.querySelectorAll(`#produtos${tipo} .card`).forEach(c => {
-    const i = c.querySelectorAll('input');
-    total += (parseFloat(i[1].value)||0)*(parseFloat(i[2].value)||0);
+function tela(id){
+  document.querySelectorAll("section").forEach(s=>s.style.display="none");
+  document.getElementById(id).style.display="block";
+}
+function aba(id){
+  ['vendas','compras','histVendas','histCompras'].forEach(a=>{
+    document.getElementById(a).style.display="none";
   });
-  document.getElementById(`total${tipo}`).innerText = total.toFixed(2);
-  return total;
+  document.getElementById(id).style.display="block";
 }
 
-function finalizarVenda() {
-  vendas.push({ data: new Date(), total: calcularTotal('Venda') });
-  renderVendas();
-  alert("Venda salva");
+function addVenda(){
+  let v = vQtd.value * vPreco.value;
+  vendasTemp.push(`${vProduto.value} - ${vQtd.value} x ${vPreco.value} = ${v}`);
+  listaVenda.innerHTML += `<div>${vendasTemp.at(-1)}</div>`;
+}
+function finalizarVenda(){
+  let soma = vendasTemp.reduce((s,i)=>s+parseFloat(i.split("=").pop()),0);
+  totalVendas += soma;
+  txtVendas.value += new Date().toLocaleString()+"\n"+vendasTemp.join("\n")+"\nTotal: "+soma+"\n\n";
+  document.getElementById("totalVendas").innerText = totalVendas;
+  vendasTemp=[]; listaVenda.innerHTML="";
 }
 
-function finalizarCompra() {
-  compras.push({
-    data: new Date(),
-    fornecedor: fornecedor.value,
-    total: calcularTotal('Compra')
-  });
-  renderCompras();
-  alert("Compra salva");
+function addCompra(){
+  let v = cQtd.value * cPreco.value;
+  comprasTemp.push(`${cProduto.value} - ${cQtd.value} x ${cPreco.value} = ${v}`);
+  listaCompra.innerHTML += `<div>${comprasTemp.at(-1)}</div>`;
+}
+function finalizarCompra(){
+  let soma = comprasTemp.reduce((s,i)=>s+parseFloat(i.split("=").pop()),0);
+  totalCompras += soma;
+  txtCompras.value += new Date().toLocaleString()+"\n"+comprasTemp.join("\n")+"\nTotal: "+soma+"\n\n";
+  document.getElementById("totalCompras").innerText = totalCompras;
+  comprasTemp=[]; listaCompra.innerHTML="";
 }
 
-function renderVendas() {
-  listaVendas.innerHTML = vendas.map(v =>
-    `<div class="card">
-      <div class="small">${v.data.toLocaleString()}</div>
-      <b>R$ ${v.total.toFixed(2)}</b>
-    </div>`
-  ).join('');
-}
-
-function renderCompras() {
-  listaCompras.innerHTML = compras.map(c =>
-    `<div class="card">
-      <div class="small">${c.data.toLocaleString()}</div>
-      <div>${c.fornecedor}</div>
-      <b>R$ ${c.total.toFixed(2)}</b>
-    </div>`
-  ).join('');
-}
-
-function atualizarTotalMensal(tab) {
-  let total = 0;
-  if (tab === 'histVendas') {
-    total = vendas.reduce((s,v)=>s+v.total,0);
-    totalMensal.innerText = `Total vendido no mês: R$ ${total.toFixed(2)}`;
-    totalMensal.style.display = 'block';
-  } else if (tab === 'histCompras') {
-    total = compras.reduce((s,c)=>s+c.total,0);
-    totalMensal.innerText = `Gasto no mês: R$ ${total.toFixed(2)}`;
-    totalMensal.style.display = 'block';
-  } else {
-    totalMensal.style.display = 'none';
-  }
-}
-
-function copiarVendas() {
-  let texto = "📊 VENDAS DO MÊS\n\n";
-  vendas.forEach(v => {
-    texto += `${v.data.toLocaleString()} - R$ ${v.total.toFixed(2)}\n`;
-  });
-  texto += `\nTotal do mês: R$ ${vendas.reduce((s,v)=>s+v.total,0).toFixed(2)}`;
-  navigator.clipboard.writeText(texto);
-  alert("Resumo copiado!");
-}
-
-function copiarCompras() {
-  let texto = "📦 COMPRAS DO MÊS\n\n";
-  compras.forEach(c => {
-    texto += `${c.data.toLocaleString()} - ${c.fornecedor} - R$ ${c.total.toFixed(2)}\n`;
-  });
-  texto += `\nTotal do mês: R$ ${compras.reduce((s,c)=>s+c.total,0).toFixed(2)}`;
-  navigator.clipboard.writeText(texto);
-  alert("Resumo copiado!");
+function copiar(id){
+  let t = document.getElementById(id);
+  t.select(); document.execCommand("copy");
+  alert("Copiado");
 }
 </script>
 
